@@ -60,11 +60,17 @@ const copyToObsidian = {
         mkdirSync(OBSIDIAN_PLUGIN_PATH, { recursive: true });
       }
 
-      const files = ['main.js', 'manifest.json', 'styles.css'];
+      const files = [
+        { from: 'main.js', to: 'main.js' },
+        { from: 'manifest.json', to: 'manifest.json' },
+        { from: 'styles.css', to: 'styles.css' },
+        { from: 'scripts/pi-bridge-server.mjs', to: 'pi-bridge-server.mjs' },
+      ];
+
       for (const file of files) {
-        if (existsSync(file)) {
-          copyFileSync(file, path.join(OBSIDIAN_PLUGIN_PATH, file));
-          console.log(`Copied ${file} to Obsidian plugin folder`);
+        if (existsSync(file.from)) {
+          copyFileSync(file.from, path.join(OBSIDIAN_PLUGIN_PATH, file.to));
+          console.log(`Copied ${file.to} to Obsidian plugin folder`);
         }
       }
 

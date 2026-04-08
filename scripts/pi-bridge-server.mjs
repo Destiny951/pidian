@@ -1,0 +1,195 @@
+import { createInterface } from 'node:readline';
+import { pathToFileURL } from 'node:url';
+
+const DEFAULT_PI_SDK_PATH = '/Users/zl-q/.nvm/versions/node/v24.14.1/lib/node_modules/@mariozechner/pi-coding-agent/dist/index.js';
+
+let sdkPromise = null;
+let session = null;
+let sessionCwd = null;
+
+function write(message) {
+  process.stdout.write(`${JSON.stringify(message)}\n`);
+}
+
+function toErrorMessage(error) {
+  if (error instanceof Error) {
+    return error.message;
+  }
+  return String(error);
+}
+
+async function loadSdk() {
+  if (sdkPromise) {
+    return sdkPromise;
+  }
+
+  sdkPromise = (async () => {
+    try {
+      return await import('@mariozechner/pi-coding-agent');
+    } catch {
+      const sdkPath = process.env.PI_SDK_PATH || DEFAULT_PI_SDK_PATH;
+      const sdkUrl = sdkPath.startsWith('file://') ? sdkPath : pathToFileURL(sdkPath).href;
+      return import(sdkUrl);
+    }
+  })();
+
+  return sdkPromise;
+}
+
+async function ensureSession(cwd) {
+  if (session && sessionCwd === cwd) {
+    return session;
+  }
+
+  const {
+    bashTool,
+    createAgentSession,
+    editTool,
+    findTool,
+    grepTool,
+    lsTool,
+    readTool,
+    writeTool,
+  } = await loadSdk();
+
+  if (session) {
+    try {
+      await session.abort();
+    } catch {
+      // no-op
+    }
+  }
+
+  const created = await createAgentSession({
+    cwd,
+    tools: [readTool, bashTool, grepTool, findTool, lsTool, editTool, writeTool],
+  });
+
+  session = created.session;
+  sessionCwd = cwd;
+  return session;
+}
+
+async function handleInit(message) {
+  if (!message.cwd || typeof message.cwd !== 'string') {
+    write({ type: 'error', id: message.id, message: 'Missing cwd in init request' });
+    return;
+  }
+
+  try {
+    await ensureSession(message.cwd);
+    write({ type: 'init_ok', id: message.id });
+  } catch (error) {
+    write({ type: 'error', id: message.id, message: toErrorMessage(error) });
+  }
+}
+
+async function handlePrompt(message) {
+  if (!session) {
+    write({ type: 'error', id: message.id, message: 'Session not initialized. Send init first.' });
+    return;
+  }
+
+  let unsubscribe = null;
+  let sawAgentEnd = false;
+
+  try {
+    unsubscribe = session.subscribe((event) => {
+      if (event?.type === 'agent_end') {
+        sawAgentEnd = true;
+      }
+      write({ type: 'prompt_event', id: message.id, event });
+    });
+
+    await session.prompt(message.prompt);
+
+    if (!sawAgentEnd) {
+      write({ type: 'prompt_event', id: message.id, event: { type: 'agent_end' } });
+    }
+    write({ type: 'prompt_done', id: message.id });
+  } catch (error) {
+    write({ type: 'error', id: message.id, message: toErrorMessage(error) });
+  } finally {
+    if (unsubscribe) {
+      unsubscribe();
+    }
+  }
+}
+
+async function handleCancel(message) {
+  try {
+    if (session) {
+      await session.abort();
+    }
+    write({ type: 'cancel_ok', id: message.id });
+  } catch (error) {
+    write({ type: 'error', id: message.id, message: toErrorMessage(error) });
+  }
+}
+
+async function handleReset(message) {
+  try {
+    if (session) {
+      await session.abort();
+    }
+    session = null;
+    sessionCwd = null;
+    write({ type: 'reset_ok', id: message.id });
+  } catch (error) {
+    write({ type: 'error', id: message.id, message: toErrorMessage(error) });
+  }
+}
+
+const rl = createInterface({
+  input: process.stdin,
+  crlfDelay: Infinity,
+});
+
+rl.on('line', async (line) => {
+  const trimmed = line.trim();
+  if (!trimmed) {
+    return;
+  }
+
+  let message;
+  try {
+    message = JSON.parse(trimmed);
+  } catch {
+    write({ type: 'error', message: 'Invalid JSON request' });
+    return;
+  }
+
+  if (!message?.type || !message?.id) {
+    write({ type: 'error', message: 'Invalid request payload' });
+    return;
+  }
+
+  switch (message.type) {
+    case 'init':
+      await handleInit(message);
+      break;
+    case 'prompt':
+      await handlePrompt(message);
+      break;
+    case 'cancel':
+      await handleCancel(message);
+      break;
+    case 'reset':
+      await handleReset(message);
+      break;
+    default:
+      write({ type: 'error', id: message.id, message: `Unknown request type: ${message.type}` });
+      break;
+  }
+});
+
+rl.on('close', async () => {
+  if (session) {
+    try {
+      await session.abort();
+    } catch {
+      // no-op
+    }
+  }
+  process.exit(0);
+});

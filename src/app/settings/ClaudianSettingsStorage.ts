@@ -27,6 +27,10 @@ import {
   getCodexProviderSettings,
   updateCodexProviderSettings,
 } from '../../providers/codex/settings';
+import {
+  getPiProviderSettings,
+  updatePiProviderSettings,
+} from '../../providers/pi/settings';
 import { DEFAULT_CLAUDIAN_SETTINGS } from './defaultSettings';
 
 export {
@@ -225,6 +229,10 @@ export class ClaudianSettingsStorage {
     updateCodexProviderSettings(
       merged as unknown as Record<string, unknown>,
       getCodexProviderSettings(legacyProviderSettings),
+    );
+    updatePiProviderSettings(
+      merged as unknown as Record<string, unknown>,
+      getPiProviderSettings(legacyProviderSettings),
     );
 
     if (
