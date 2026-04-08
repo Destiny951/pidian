@@ -5,6 +5,7 @@ jest.mock('@/utils/path', () => ({
 }));
 
 import type { StreamChunk } from '@/core/types/chat';
+import { PiBridgeClient } from '@/providers/pi/bridge/PiBridgeClient';
 import { PiChatRuntime } from '@/providers/pi/runtime/PiChatRuntime';
 
 const mockPlugin = {
@@ -16,6 +17,10 @@ const mockPlugin = {
 } as any;
 
 describe('PiChatRuntime', () => {
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
   beforeEach(() => {
     (getVaultPath as jest.Mock).mockReturnValue('/test/vault');
   });
@@ -30,7 +35,35 @@ describe('PiChatRuntime', () => {
       expect(turn.prompt).toBe('Hello world');
       expect(turn.request.text).toBe('Hello world');
       expect(turn.isCompact).toBe(false);
-      expect(turn.persistedContent).toBe('');
+      expect(turn.persistedContent).toBe('Hello world');
+    });
+
+    it('should include note and selection contexts in prompt', () => {
+      const runtime = new PiChatRuntime(mockPlugin);
+      const turn = runtime.prepareTurn({
+        text: '将我选中的文本换成2',
+        currentNotePath: '第一章 测试.md',
+        editorSelection: {
+          notePath: '第一章 测试.md',
+          mode: 'selection',
+          selectedText: '11111\n111',
+        },
+        browserSelection: {
+          source: 'browser',
+          selectedText: 'browser text',
+          url: 'https://example.com',
+        },
+        canvasSelection: {
+          canvasPath: '画布.canvas',
+          nodeIds: ['node-1', 'node-2'],
+        },
+      });
+
+      expect(turn.prompt).toContain('将我选中的文本换成2');
+      expect(turn.prompt).toContain('<current_note>\n第一章 测试.md\n</current_note>');
+      expect(turn.prompt).toContain('<editor_selection path="第一章 测试.md">\n11111\n111\n</editor_selection>');
+      expect(turn.prompt).toContain('<browser_selection source="browser" url="https://example.com">\nbrowser text\n</browser_selection>');
+      expect(turn.prompt).toContain('<canvas_selection path="画布.canvas">\nnode-1, node-2\n</canvas_selection>');
     });
   });
 
@@ -49,6 +82,23 @@ describe('PiChatRuntime', () => {
     it('should return false initially', () => {
       const runtime = new PiChatRuntime(mockPlugin);
       expect(runtime.isReady()).toBe(false);
+    });
+  });
+
+  describe('session sync', () => {
+    it('should restore target session id via bridge on ensureReady', async () => {
+      const ensureSpy = jest
+        .spyOn(PiBridgeClient.prototype, 'ensureReady')
+        .mockResolvedValue('pi-session-123');
+
+      const runtime = new PiChatRuntime(mockPlugin);
+      runtime.syncConversationState({ sessionId: 'pi-session-123', providerState: {} });
+
+      const ready = await runtime.ensureReady();
+
+      expect(ready).toBe(true);
+      expect(ensureSpy).toHaveBeenCalledWith('/test/vault', 'pi-session-123');
+      expect(runtime.getSessionId()).toBe('pi-session-123');
     });
   });
 

@@ -9,7 +9,7 @@ import type { PiEvent } from '../adapters/types';
 import type { BridgeRequest, BridgeResponse } from './protocol';
 
 type InitPending = {
-  resolve: () => void;
+  resolve: (sessionId: string | null) => void;
   reject: (error: Error) => void;
 };
 
@@ -25,6 +25,7 @@ export class PiBridgeClient {
   private stdoutBuffer = '';
   private sequence = 0;
   private readyCwd: string | null = null;
+  private activeSessionId: string | null = null;
   private initPending = new Map<string, InitPending>();
   private promptPending = new Map<string, PromptPending>();
 
@@ -32,19 +33,23 @@ export class PiBridgeClient {
     this.plugin = plugin;
   }
 
-  async ensureReady(cwd: string): Promise<void> {
+  async ensureReady(cwd: string, sessionId?: string): Promise<string | null> {
     await this.ensureProcess();
-    if (this.readyCwd === cwd) {
-      return;
+    const requestedSessionId = sessionId ?? null;
+
+    if (this.readyCwd === cwd && this.activeSessionId === requestedSessionId) {
+      return this.activeSessionId;
     }
 
     const id = this.nextId('init');
-    await new Promise<void>((resolve, reject) => {
+    const resolvedSessionId = await new Promise<string | null>((resolve, reject) => {
       this.initPending.set(id, { resolve, reject });
-      this.send({ type: 'init', id, cwd });
+      this.send({ type: 'init', id, cwd, sessionId: requestedSessionId ?? undefined });
     });
 
     this.readyCwd = cwd;
+    this.activeSessionId = resolvedSessionId;
+    return resolvedSessionId;
   }
 
   async prompt(prompt: string, onEvent: (event: PiEvent) => void): Promise<void> {
@@ -68,10 +73,12 @@ export class PiBridgeClient {
   async reset(): Promise<void> {
     if (!this.proc) {
       this.readyCwd = null;
+      this.activeSessionId = null;
       return;
     }
     const id = this.nextId('reset');
     this.readyCwd = null;
+    this.activeSessionId = null;
     this.send({ type: 'reset', id });
   }
 
@@ -178,7 +185,8 @@ export class PiBridgeClient {
         return;
       }
       this.initPending.delete(message.id);
-      pending.resolve();
+      this.activeSessionId = message.sessionId;
+      pending.resolve(message.sessionId);
       return;
     }
 
@@ -231,6 +239,7 @@ export class PiBridgeClient {
 
   private handleProcessExit(error: Error): void {
     this.readyCwd = null;
+    this.activeSessionId = null;
 
     for (const [id, pending] of this.initPending.entries()) {
       this.initPending.delete(id);
@@ -244,6 +253,10 @@ export class PiBridgeClient {
 
     this.proc = null;
     this.stdoutBuffer = '';
+  }
+
+  getActiveSessionId(): string | null {
+    return this.activeSessionId;
   }
 
   private nextId(prefix: string): string {

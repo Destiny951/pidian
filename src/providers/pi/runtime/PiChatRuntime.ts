@@ -17,6 +17,10 @@ import type {
 } from '../../../core/runtime/types';
 import type { ChatMessage, Conversation, SlashCommand, StreamChunk } from '../../../core/types';
 import type ClaudianPlugin from '../../../main';
+import { appendBrowserContext } from '../../../utils/browser';
+import { appendCanvasContext } from '../../../utils/canvas';
+import { appendCurrentNote } from '../../../utils/context';
+import { appendEditorContext } from '../../../utils/editor';
 import { getVaultPath } from '../../../utils/path';
 import { PiEventAdapter } from '../adapters/PiEventAdapter';
 import type { PiEvent } from '../adapters/types';
@@ -32,6 +36,8 @@ export class PiChatRuntime implements ChatRuntime {
   private pendingChunks: StreamChunk[] = [];
   private resolveChunk: ((chunk: StreamChunk) => void) | null = null;
   private ready = false;
+  private desiredSessionId: string | null = null;
+  private sessionId: string | null = null;
 
   constructor(plugin: ClaudianPlugin) {
     this.plugin = plugin;
@@ -44,13 +50,14 @@ export class PiChatRuntime implements ChatRuntime {
   }
 
   async ensureReady(_options?: ChatRuntimeEnsureReadyOptions): Promise<boolean> {
-    if (this.ready) return true;
+    if (this.ready && this.sessionId === this.desiredSessionId) return true;
 
     const vaultPath = getVaultPath(this.plugin.app);
     if (!vaultPath) return false;
 
     try {
-      await this.bridge.ensureReady(vaultPath);
+      const resolvedSessionId = await this.bridge.ensureReady(vaultPath, this.desiredSessionId ?? undefined);
+      this.sessionId = resolvedSessionId;
       this.ready = true;
       return true;
     } catch (error) {
@@ -60,10 +67,28 @@ export class PiChatRuntime implements ChatRuntime {
   }
 
   prepareTurn(request: ChatTurnRequest): PreparedChatTurn {
+    let persistedContent = request.text;
+
+    if (request.currentNotePath) {
+      persistedContent = appendCurrentNote(persistedContent, request.currentNotePath);
+    }
+
+    if (request.editorSelection) {
+      persistedContent = appendEditorContext(persistedContent, request.editorSelection);
+    }
+
+    if (request.browserSelection) {
+      persistedContent = appendBrowserContext(persistedContent, request.browserSelection);
+    }
+
+    if (request.canvasSelection) {
+      persistedContent = appendCanvasContext(persistedContent, request.canvasSelection);
+    }
+
     return {
       request,
-      prompt: request.text,
-      persistedContent: '',
+      prompt: persistedContent,
+      persistedContent,
       isCompact: false,
       mcpMentions: new Set(),
     };
@@ -131,6 +156,8 @@ export class PiChatRuntime implements ChatRuntime {
 
   resetSession(): void {
     this.ready = false;
+    this.sessionId = null;
+    this.desiredSessionId = null;
     void this.bridge.reset();
   }
 
@@ -139,10 +166,11 @@ export class PiChatRuntime implements ChatRuntime {
     this.resetSession();
     this.bridge.dispose();
     this.ready = false;
+    this.sessionId = null;
   }
 
   getSessionId(): string | null {
-    return null;
+    return this.sessionId;
   }
 
   isReady(): boolean {
@@ -156,9 +184,15 @@ export class PiChatRuntime implements ChatRuntime {
   setResumeCheckpoint(_checkpointId: string | undefined): void {}
 
   syncConversationState(
-    _conversation: ChatRuntimeConversationState | null,
+    conversation: ChatRuntimeConversationState | null,
     _externalContextPaths?: string[],
-  ): void {}
+  ): void {
+    const nextSessionId = conversation?.sessionId ?? null;
+    this.desiredSessionId = nextSessionId;
+    if (this.sessionId !== nextSessionId) {
+      this.ready = false;
+    }
+  }
 
   reloadMcpServers(): Promise<void> {
     return Promise.resolve();

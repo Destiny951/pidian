@@ -2,6 +2,7 @@ import { createInterface } from 'node:readline';
 import { pathToFileURL } from 'node:url';
 
 const DEFAULT_PI_SDK_PATH = '/Users/zl-q/.nvm/versions/node/v24.14.1/lib/node_modules/@mariozechner/pi-coding-agent/dist/index.js';
+const DEFAULT_AGENT_DIR = `${process.env.HOME ?? ''}/.pi/agent`;
 
 let sdkPromise = null;
 let session = null;
@@ -36,16 +37,19 @@ async function loadSdk() {
   return sdkPromise;
 }
 
-async function ensureSession(cwd) {
-  if (session && sessionCwd === cwd) {
+async function ensureSession(cwd, requestedSessionId = null) {
+
+  if (session && sessionCwd === cwd && session.sessionId === requestedSessionId) {
     return session;
   }
 
   const {
+    SessionManager,
     bashTool,
     createAgentSession,
     editTool,
     findTool,
+    getDefaultSessionDir,
     grepTool,
     lsTool,
     readTool,
@@ -60,8 +64,27 @@ async function ensureSession(cwd) {
     }
   }
 
+  const agentDir = process.env.PI_AGENT_DIR || DEFAULT_AGENT_DIR;
+  let sessionManager;
+  if (requestedSessionId) {
+    try {
+      const sessionDir = typeof getDefaultSessionDir === 'function'
+        ? getDefaultSessionDir(cwd, agentDir)
+        : undefined;
+      const sessions = await SessionManager.list(cwd, sessionDir);
+      const matched = sessions.find((entry) => entry.id === requestedSessionId);
+      if (matched?.path) {
+        sessionManager = SessionManager.open(matched.path, sessionDir, cwd);
+      }
+    } catch {
+      // ignore lookup failures and fall back to creating a new session
+    }
+  }
+
   const created = await createAgentSession({
     cwd,
+    agentDir,
+    ...(sessionManager ? { sessionManager } : {}),
     tools: [readTool, bashTool, grepTool, findTool, lsTool, editTool, writeTool],
   });
 
@@ -77,8 +100,8 @@ async function handleInit(message) {
   }
 
   try {
-    await ensureSession(message.cwd);
-    write({ type: 'init_ok', id: message.id });
+    await ensureSession(message.cwd, message.sessionId);
+    write({ type: 'init_ok', id: message.id, sessionId: session?.sessionId ?? null });
   } catch (error) {
     write({ type: 'error', id: message.id, message: toErrorMessage(error) });
   }
