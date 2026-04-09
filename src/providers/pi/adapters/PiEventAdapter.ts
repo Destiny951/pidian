@@ -78,6 +78,30 @@ export class PiEventAdapter {
   }
 
   toStreamChunk(event: PiEvent): StreamChunk | null {
+    if (
+      event.type === 'tool_execution_start'
+      || event.type === 'tool_execution_end'
+      || event.type === 'message_update'
+    ) {
+      console.log('[PI_EVENT]', JSON.stringify(event));
+    }
+
+    if (event.type === 'tool_execution_start') {
+      console.log('[PI_ADAPTER] tool_execution_start:', {
+        toolCallId: event.toolCallId,
+        toolName: event.toolName,
+        bufferedIds: Array.from(this.toolCallBuffers.entries()).map(([id, b]) => ({ id, name: b.name })),
+      });
+    }
+
+    if (event.type === 'tool_execution_end') {
+      console.log('[PI_ADAPTER] tool_execution_end:', {
+        toolCallId: event.toolCallId,
+        toolName: event.toolName,
+        bufferedIds: Array.from(this.toolCallBuffers.entries()).map(([id, b]) => ({ id, name: b.name })),
+      });
+    }
+
     if (event.type === 'message_update') {
       const assistantEvent = event.assistantMessageEvent;
       if (!assistantEvent) return null;
@@ -125,26 +149,29 @@ export class PiEventAdapter {
     }
 
     if (event.type === 'tool_execution_start') {
-      let canonicalId = event.toolUseId;
+      let canonicalId = event.toolCallId;
       if (!this.toolCallBuffers.has(canonicalId)) {
         const matchedToolCallId = this.findBufferedToolCallIdByName(event.toolName);
         if (matchedToolCallId) {
           canonicalId = matchedToolCallId;
-          this.executionToToolCallId.set(event.toolUseId, matchedToolCallId);
+          this.executionToToolCallId.set(event.toolCallId, matchedToolCallId);
         }
       }
 
-      const buffer = this.toolCallBuffers.get(canonicalId) ?? { name: event.toolName, args: '' };
+      const buffer = this.toolCallBuffers.get(canonicalId);
+      const fallbackArgs = event.args ? JSON.stringify(event.args) : '';
+      const toolName = buffer?.name ?? event.toolName ?? 'unknown';
+      const toolArgs = buffer?.args ?? fallbackArgs;
       return {
         type: 'tool_use',
         id: canonicalId,
-        name: buffer.name,
-        input: this.parseToolInput(buffer.args),
+        name: toolName,
+        input: this.parseToolInput(toolArgs),
       };
     }
 
     if (event.type === 'tool_execution_end') {
-      let canonicalId = this.executionToToolCallId.get(event.toolUseId) ?? event.toolUseId;
+      let canonicalId = this.executionToToolCallId.get(event.toolCallId) ?? event.toolCallId;
       if (!this.toolCallBuffers.has(canonicalId)) {
         const matchedToolCallId = this.findBufferedToolCallIdByName(event.toolName);
         if (matchedToolCallId) {
@@ -153,9 +180,10 @@ export class PiEventAdapter {
       }
 
       const buffer = this.toolCallBuffers.get(canonicalId);
-      const toolName = buffer?.name ?? event.toolName;
+      const toolName = buffer?.name ?? event.toolName ?? 'unknown';
+      console.log('[PI_ADAPTER] tool_result emitting:', { canonicalId, toolName, bufferExists: !!buffer });
       this.toolCallBuffers.delete(canonicalId);
-      this.executionToToolCallId.delete(event.toolUseId);
+      this.executionToToolCallId.delete(event.toolCallId);
       return {
         type: 'tool_result',
         id: canonicalId,

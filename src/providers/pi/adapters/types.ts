@@ -32,8 +32,8 @@ export type PiEvent =
   | { type: 'message_end'; messageId: string }
   | { type: 'message_update'; messageId: string; assistantMessageEvent: AssistantMessageEvent }
   | { type: 'turn_end' }
-  | { type: 'tool_execution_start'; toolUseId: string; toolName: string }
-  | { type: 'tool_execution_end'; toolUseId: string; toolName?: string; result: unknown; isError?: boolean }
+  | { type: 'tool_execution_start'; toolCallId: string; toolName: string; args?: Record<string, unknown> }
+  | { type: 'tool_execution_end'; toolCallId: string; toolName?: string; result: unknown; isError?: boolean }
   | { type: 'agent_end' };
 
 export type PiEventListener = (event: PiEvent) => void;

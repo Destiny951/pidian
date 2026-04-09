@@ -18,6 +18,7 @@
 - Prefer provider-specific settings/environment flow similar to Codex/Claude (`plugin.getActiveEnvironmentVariables(providerId)` + PATH merge).
 - Validate integration changes with focused tests and build (`npm test ...`, `npm run typecheck`, `npm run build`).
 - Keep docs updated when scope or bug status changes (`docs/plans/...`, `docs/bugs/...`).
+- PI event types use `toolCallId` (not `toolUseId`) — confirmed from actual bridge JSON; when adding new event fields always verify against actual bridge output, not assumptions.
 
 ## Preferences worth keeping
 - User prefers direct, evidence-based root-cause analysis before fixes.
