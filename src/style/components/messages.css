@@ -260,3 +260,88 @@
   font-size: 11px;
   white-space: nowrap;
 }
+
+.claudian-user-context {
+  margin-top: 8px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 6px;
+  background: var(--background-secondary);
+}
+
+.claudian-user-context-summary {
+  cursor: pointer;
+  padding: 6px 8px;
+  color: var(--text-muted);
+  font-size: 12px;
+  font-family: var(--font-monospace);
+  user-select: none;
+}
+
+.claudian-user-context-list {
+  padding: 0 8px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.claudian-user-context-card {
+  padding: 6px;
+  border-radius: 4px;
+  background: var(--background-primary-alt);
+}
+
+.claudian-user-context-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.claudian-user-context-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  color: var(--text-muted);
+  margin-top: 1px;
+}
+
+.claudian-user-context-icon svg {
+  width: 14px;
+  height: 14px;
+}
+
+.claudian-user-context-meta {
+  min-width: 0;
+}
+
+.claudian-user-context-title {
+  color: var(--text-normal);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.claudian-user-context-subtitle {
+  color: var(--text-muted);
+  font-size: 12px;
+  word-break: break-word;
+}
+
+.claudian-user-context-details {
+  margin-top: 4px;
+}
+
+.claudian-user-context-details > summary {
+  cursor: pointer;
+  color: var(--text-faint);
+  font-size: 11px;
+}
+
+.claudian-user-context-content {
+  margin: 6px 0 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-family: var(--font-monospace);
+  font-size: 11px;
+  color: var(--text-normal);
+}

@@ -20,7 +20,7 @@ import type {
   ChatTurnRequest,
 } from '../../../core/runtime/types';
 import { TOOL_EXIT_PLAN_MODE } from '../../../core/tools/toolNames';
-import type { ApprovalDecision, ChatMessage, ExitPlanModeDecision, StreamChunk } from '../../../core/types';
+import type { ApprovalDecision, ChatMessage, ContentBlock, ExitPlanModeDecision, StreamChunk } from '../../../core/types';
 import type ClaudianPlugin from '../../../main';
 import { ResumeSessionDropdown } from '../../../shared/components/ResumeSessionDropdown';
 import { InstructionModal } from '../../../shared/modals/InstructionConfirmModal';
@@ -270,13 +270,18 @@ export class InputController {
 
     fileContextManager?.markCurrentNoteSent();
 
+    const skillMatch = content.match(/^\/skill:(\S+)(?:\s+(.*))?$/);
+    const userDisplayContent = skillMatch ? (skillMatch[2] ?? '') : displayContent;
+    const contextBlocks = this.buildUserContextBlocks(turnRequest, skillMatch?.[1]);
+
     const userMsg: ChatMessage = {
       id: this.deps.generateId(),
       role: 'user',
       content: displayContent,
-      displayContent,                // Original user input (for UI display)
+      displayContent: userDisplayContent,
       timestamp: Date.now(),
       images: imagesForMessage,
+      ...(contextBlocks.length > 0 ? { contentBlocks: contextBlocks } : {}),
     };
     state.addMessage(userMsg);
     renderer.addMessage(userMsg);
@@ -669,6 +674,75 @@ export class InputController {
           : undefined,
       },
     };
+  }
+
+  private buildUserContextBlocks(
+    request: ChatTurnRequest,
+    skillName?: string,
+  ): ContentBlock[] {
+    const blocks: ContentBlock[] = [];
+
+    if (skillName) {
+      blocks.push({ type: 'context', tag: `skill name="${skillName}"`, content: '' });
+    }
+
+    if (request.currentNotePath) {
+      blocks.push({ type: 'context', tag: 'current_note', content: request.currentNotePath });
+    }
+
+    if (request.editorSelection?.mode === 'selection' && request.editorSelection.selectedText) {
+      const linesAttr = request.editorSelection.startLine && request.editorSelection.lineCount
+        ? ` lines="${request.editorSelection.startLine}-${request.editorSelection.startLine + request.editorSelection.lineCount - 1}"`
+        : '';
+      const path = request.editorSelection.notePath || 'current note';
+      blocks.push({
+        type: 'context',
+        tag: `editor_selection path="${path}"${linesAttr}`,
+        content: request.editorSelection.selectedText,
+      });
+    }
+
+    if (request.editorSelection?.mode === 'cursor' && request.editorSelection.cursorContext) {
+      const path = request.editorSelection.notePath || 'current note';
+      const cursor = request.editorSelection.cursorContext;
+      const before = cursor.beforeCursor || '';
+      const after = cursor.afterCursor || '';
+      const marker = cursor.isInbetween ? ' #inbetween' : ' #inline';
+      blocks.push({
+        type: 'context',
+        tag: `editor_cursor path="${path}"`,
+        content: `${before}|${after}${marker}`,
+      });
+    }
+
+    if (request.browserSelection?.selectedText?.trim()) {
+      const source = request.browserSelection.source || 'unknown';
+      const titleAttr = request.browserSelection.title ? ` title="${request.browserSelection.title}"` : '';
+      const urlAttr = request.browserSelection.url ? ` url="${request.browserSelection.url}"` : '';
+      blocks.push({
+        type: 'context',
+        tag: `browser_selection source="${source}"${titleAttr}${urlAttr}`,
+        content: request.browserSelection.selectedText,
+      });
+    }
+
+    if (request.canvasSelection?.nodeIds?.length) {
+      blocks.push({
+        type: 'context',
+        tag: `canvas_selection path="${request.canvasSelection.canvasPath}"`,
+        content: request.canvasSelection.nodeIds.join(', '),
+      });
+    }
+
+    if (request.externalContextPaths && request.externalContextPaths.length > 0) {
+      blocks.push({
+        type: 'context',
+        tag: 'context_files',
+        content: request.externalContextPaths.join(', '),
+      });
+    }
+
+    return blocks;
   }
 
   private getQueuedMessageDisplay(message: QueuedMessage | null): string {

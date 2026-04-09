@@ -240,9 +240,12 @@ export class PiChatRuntime implements ChatRuntime {
     conversation: Conversation | null;
     sessionInvalidated: boolean;
   }): SessionUpdateResult {
+    const existingSessionId = params.conversation?.sessionId ?? null;
+    const runtimeSessionId = this.getSessionId();
+
     return {
       updates: {
-        sessionId: this.getSessionId(),
+        sessionId: runtimeSessionId ?? (params.sessionInvalidated ? null : existingSessionId),
         providerState: params.sessionInvalidated ? undefined : params.conversation?.providerState,
       },
     };

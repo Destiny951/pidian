@@ -218,7 +218,6 @@ export class ConversationController {
   async switchTo(id: string): Promise<void> {
     const { plugin, state, subagentManager } = this.deps;
 
-    if (id === state.currentConversationId) return;
     if (state.isStreaming) return;
     if (state.isSwitchingConversation) return;
     if (state.isCreatingConversation) return;
@@ -560,16 +559,14 @@ export class ConversationController {
         text: isCurrent ? 'Current session' : this.formatDate(conv.lastResponseAt ?? conv.createdAt),
       });
 
-      if (!isCurrent) {
-        content.addEventListener('click', async (e) => {
-          e.stopPropagation();
-          try {
-            await options.onSelectConversation(conv.id);
-          } catch {
-            new Notice('Failed to load conversation');
-          }
-        });
-      }
+      content.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        try {
+          await options.onSelectConversation(conv.id);
+        } catch {
+          new Notice('Failed to load conversation');
+        }
+      });
 
       const actions = item.createDiv({ cls: 'claudian-history-item-actions' });
 

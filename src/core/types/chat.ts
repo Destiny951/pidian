@@ -33,7 +33,9 @@ export type ContentBlock =
   | { type: 'tool_use'; toolId: string }
   | { type: 'thinking'; content: string; durationSeconds?: number }
   | { type: 'subagent'; subagentId: string; mode?: SubagentMode }
-  | { type: 'context_compacted' };
+  | { type: 'context_compacted' }
+  | { type: 'skill'; skillName: string; args?: string }
+  | { type: 'context'; tag: string; content: string };
 
 /** Chat message with content, tool calls, and attachments. */
 export interface ChatMessage {

@@ -1,182 +1,110 @@
-# Claudian
+# Claudian (Fork Edition)
 
-![GitHub stars](https://img.shields.io/github/stars/YishenTu/claudian?style=social)
-![GitHub release](https://img.shields.io/github/v/release/YishenTu/claudian)
-![License](https://img.shields.io/github/license/YishenTu/claudian)
+`Claudian` 是一个 Obsidian 桌面端插件，把 AI 编码 Agent 直接嵌到你的知识库侧边栏里。
 
-![Preview](Preview.png)
+你的 Vault 会成为 Agent 的工作目录，支持读写文件、搜索、bash 命令、多轮会话和上下文引用。
 
-An Obsidian plugin that embeds AI coding agents (Claude Code, Codex, and more to come) in your vault. Your vault becomes the agent's working directory — file read/write, search, bash, and multi-step workflows all work out of the box.
+## Fork 来源
 
-## Features & Usage
+本仓库基于以下项目 fork 并持续演进：
 
-Open the chat sidebar from the ribbon icon or command palette. Select text and use the hotkey for inline edit. Everything works like Claude Code or Codex — talk to the agent, and it reads, writes, edits, and searches files in your vault.
+- 上游项目: `YishenTu/claudian`
+- 上游地址: `https://github.com/YishenTu/claudian`
 
-**Inline Edit** — Select text or start at the cursor position + hotkey to edit directly in notes with word-level diff preview.
+感谢上游提供的多 Provider 架构、聊天侧边栏基础能力、以及与 Obsidian 的深度集成。
 
-**Slash Commands & Skills** — Type `/` or `$` for reusable prompt templates or Skills from user- and vault-level scopes.
+## 我在这个 Fork 中做的核心改进
 
-**`@mention`** - Type `@` to mention anything you want the agent to work with, vault files, subagents, MCP servers, or files in external directories.
+以下是本 fork 的重点改动方向，尤其是 PI Provider 相关：
 
-**Plan Mode** — Toggle via `Shift+Tab`. The agent explores and designs before implementing, then presents a plan for approval.
+- 新增 PI Provider 的桥接架构（Node sidecar bridge），避免在 Obsidian 插件运行时直接打包 PI SDK。
+- 补齐 PI 会话恢复链路: 会话 `sessionId` 传递、切换会话恢复、重启后 JSONL 历史回放。
+- 修复 PI 工具调用渲染问题: `toolUseId`/`toolCallId` 字段不一致导致的 tool block 丢失。
+- 新增 PI skills 下拉命令目录: 支持通过 `/skill:xxx` 快捷触发。
+- 统一 user context 渲染: skill、current note、editor/browser/canvas/context files 进入同一折叠 context UI，而不是泄露原始注入文本。
+- 修复历史会话切换与 UI 状态错位问题，避免“高亮会话和实际会话不一致”。
+- 优化 PI 环境变量注入与 PATH 继承，降低 sidecar 启动和工具调用失败概率。
 
-**Instruction Mode (`#`)** — Refined custom instructions added from the chat input.
+## 主要能力
 
-**MCP Servers** — Connect external tools via Model Context Protocol (stdio, SSE, HTTP). Claude manages vault MCP in-app; Codex uses its own CLI-managed MCP configuration.
+- 多 Provider 聊天（Claude / Codex / PI）
+- 多标签会话与历史会话切换
+- Slash 命令、Skill 触发、`@` 上下文引用
+- Inline Edit（文本就地改写，差异预览）
+- Plan Mode（先规划后执行）
+- MCP 服务器接入（Provider 能力范围内）
 
-**Multi-Tab & Conversations** — Multiple chat tabs, conversation history, fork, resume, and compact.
+## 运行要求
 
-## Requirements
+- Obsidian `>= 1.4.5`
+- 仅桌面端（macOS / Linux / Windows）
+- 对应 Provider 的 CLI 或运行环境（按你启用的 Provider 准备）
 
-- **Claude provider**: [Claude Code CLI](https://code.claude.com/docs/en/overview) installed (native install recommended). Claude subscription/API or compatible provider ([Openrouter](https://openrouter.ai/docs/guides/guides/claude-code-integration), [Kimi](https://platform.moonshot.ai/docs/guide/agent-support), etc.).
-- **Codex provider** (optional): [Codex CLI](https://github.com/openai/codex) installed.
-- Obsidian v1.4.5+
-- Desktop only (macOS, Linux, Windows)
+## 安装
 
-## Installation
+### 方式 1: 从 Release 安装（推荐）
 
-### From GitHub Release (recommended)
+1. 下载 `main.js`、`manifest.json`、`styles.css`
+2. 放到你的 Vault 插件目录:
 
-1. Download `main.js`, `manifest.json`, and `styles.css` from the [latest release](https://github.com/YishenTu/claudian/releases/latest)
-2. Create a folder called `claudian` in your vault's plugins folder:
-   ```
-   /path/to/vault/.obsidian/plugins/claudian/
-   ```
-3. Copy the downloaded files into the `claudian` folder
-4. Enable the plugin in Obsidian:
-   - Settings → Community plugins → Enable "Claudian"
+```text
+/path/to/vault/.obsidian/plugins/claudian/
+```
 
-### Using BRAT
+3. 在 Obsidian 社区插件里启用 `Claudian`
 
-[BRAT](https://github.com/TfTHacker/obsidian42-brat) (Beta Reviewers Auto-update Tester) allows you to install and automatically update plugins directly from GitHub.
-
-1. Install the BRAT plugin from Obsidian Community Plugins
-2. Enable BRAT in Settings → Community plugins
-3. Open BRAT settings and click "Add Beta plugin"
-4. Enter the repository URL: `https://github.com/YishenTu/claudian`
-5. Click "Add Plugin" and BRAT will install Claudian automatically
-6. Enable Claudian in Settings → Community plugins
-
-> **Tip**: BRAT will automatically check for updates and notify you when a new version is available.
-
-### From source (development)
-
-1. Clone this repository into your vault's plugins folder:
-   ```bash
-   cd /path/to/vault/.obsidian/plugins
-   git clone https://github.com/YishenTu/claudian.git
-   cd claudian
-   ```
-
-2. Install dependencies and build:
-   ```bash
-   npm install
-   npm run build
-   ```
-
-3. Enable the plugin in Obsidian:
-   - Settings → Community plugins → Enable "Claudian"
-
-### Development
+### 方式 2: 从源码开发
 
 ```bash
-# Watch mode
+git clone <this-fork-repo-url>
+cd claudian
+npm install
 npm run dev
+```
 
-# Production build
+## 开发常用命令
+
+```bash
+# 类型检查
+npm run typecheck
+
+# 单元测试
+npm test
+
+# 生产构建
 npm run build
 ```
 
-> **Tip**: Copy `.env.local.example` to `.env.local` or `npm install` and setup your vault path to auto-copy files during development.
+## 架构概览
 
-## Privacy & Data Use
-
-- **Sent to API**: Your input, attached files, images, and tool call outputs. Default: Anthropic (Claude) or OpenAI (Codex); configurable via environment variables.
-- **Local storage**: Claudian settings and session metadata in `vault/.claudian/`; Claude provider files in `vault/.claude/`; transcripts in `~/.claude/projects/` (Claude) and `~/.codex/sessions/` (Codex).
-- **No telemetry**: No tracking beyond your configured API provider.
-
-## Troubleshooting
-
-### Claude CLI not found
-
-If you encounter `spawn claude ENOENT` or `Claude CLI not found`, the plugin can't auto-detect your Claude installation. Common with Node version managers (nvm, fnm, volta).
-
-**Solution**: Find your CLI path and set it in Settings → Advanced → Claude CLI path.
-
-| Platform | Command | Example Path |
-|----------|---------|--------------|
-| macOS/Linux | `which claude` | `/Users/you/.volta/bin/claude` |
-| Windows (native) | `where.exe claude` | `C:\Users\you\AppData\Local\Claude\claude.exe` |
-| Windows (npm) | `npm root -g` | `{root}\@anthropic-ai\claude-code\cli.js` |
-
-> **Note**: On Windows, avoid `.cmd` wrappers. Use `claude.exe` or `cli.js`.
-
-**Alternative**: Add your Node.js bin directory to PATH in Settings → Environment → Custom variables.
-
-### npm CLI and Node.js not in same directory
-
-If using npm-installed CLI, check if `claude` and `node` are in the same directory:
-```bash
-dirname $(which claude)
-dirname $(which node)
-```
-
-If different, GUI apps like Obsidian may not find Node.js.
-
-**Solutions**:
-1. Install native binary (recommended)
-2. Add Node.js path to Settings → Environment: `PATH=/path/to/node/bin`
-
-### Codex provider
-
-Codex support is live but still needs more testing across platforms and installation methods. If you run into any bugs, please [submit a GitHub issue](https://github.com/YishenTu/claudian/issues).
-
-## Architecture
-
-```
+```text
 src/
-├── main.ts                      # Plugin entry point
-├── app/                         # Shared defaults and plugin-level storage
-├── core/                        # Provider-neutral runtime, registry, and type contracts
-│   ├── runtime/                 # ChatRuntime interface and approval types
-│   ├── providers/               # Provider registry and workspace services
-│   ├── security/                # Approval utilities
-│   └── ...                      # commands, mcp, prompt, storage, tools, types
+├── core/                 # Provider-neutral contracts/runtime/registry
 ├── providers/
-│   ├── claude/                  # Claude SDK adaptor, prompt encoding, storage, MCP, plugins
-│   └── codex/                   # Codex app-server adaptor, JSON-RPC transport, JSONL history
-├── features/
-│   ├── chat/                    # Sidebar chat: tabs, controllers, renderers
-│   ├── inline-edit/             # Inline edit modal and provider-backed edit services
-│   └── settings/                # Settings shell with provider tabs
-├── shared/                      # Reusable UI components and modals
-├── i18n/                        # Internationalization (10 locales)
-├── utils/                       # Cross-cutting utilities
-└── style/                       # Modular CSS
+│   ├── claude/
+│   ├── codex/
+│   └── pi/               # PI provider + bridge client + history adapter
+├── features/chat/        # chat tabs/controllers/renderers
+├── features/inline-edit/
+├── features/settings/
+├── shared/
+├── utils/
+└── style/
 ```
 
-## Roadmap
+## 数据与隐私说明
 
-- [x] 1M Opus and Sonnet models
-- [x] Codex provider integration
-- [ ] More to come!
+- 会话元数据存储在 Vault 本地。
+- Provider 原生会话记录由各 Provider 自身机制维护（如本地 JSONL 会话目录）。
+- 本 fork 不内置遥测上报逻辑。
 
-## License
+## 许可证
 
-Licensed under the [MIT License](LICENSE).
+MIT License，见 `LICENSE`。
 
-## Star History
+## 致谢
 
-<a href="https://www.star-history.com/?repos=YishenTu%2Fclaudian&type=date&legend=top-left">
- <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/image?repos=YishenTu/claudian&type=date&theme=dark&legend=top-left" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/image?repos=YishenTu/claudian&type=date&legend=top-left" />
-   <img alt="Star History Chart" src="https://api.star-history.com/image?repos=YishenTu/claudian&type=date&legend=top-left" />
- </picture>
-</a>
-
-## Acknowledgments
-
-- [Obsidian](https://obsidian.md) for the plugin API
-- [Anthropic](https://anthropic.com) for Claude and the [Claude Agent SDK](https://platform.claude.com/docs/en/agent-sdk/overview)
-- [OpenAI](https://openai.com) for [Codex](https://github.com/openai/codex)
+- [Obsidian](https://obsidian.md)
+- [Anthropic Claude](https://www.anthropic.com/)
+- [OpenAI Codex](https://github.com/openai/codex)
+- 上游项目 [YishenTu/claudian](https://github.com/YishenTu/claudian)

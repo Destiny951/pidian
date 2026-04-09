@@ -6,7 +6,7 @@ import type ClaudianPlugin from '../../../main';
 import { findNodeExecutable, getEnhancedPath, parseEnvironmentVariables } from '../../../utils/env';
 import { getVaultPath } from '../../../utils/path';
 import type { PiEvent } from '../adapters/types';
-import type { BridgeRequest, BridgeResponse } from './protocol';
+import type { BridgeRequest, BridgeResponse, PiSkillInfo } from './protocol';
 
 type InitPending = {
   resolve: (sessionId: string | null) => void;
@@ -16,6 +16,11 @@ type InitPending = {
 type PromptPending = {
   onEvent: (event: PiEvent) => void;
   resolve: () => void;
+  reject: (error: Error) => void;
+};
+
+type ListSkillsPending = {
+  resolve: (skills: PiSkillInfo[]) => void;
   reject: (error: Error) => void;
 };
 
@@ -29,6 +34,7 @@ export class PiBridgeClient {
   private activeSessionId: string | null = null;
   private initPending = new Map<string, InitPending>();
   private promptPending = new Map<string, PromptPending>();
+  private listSkillsPending = new Map<string, ListSkillsPending>();
 
   constructor(plugin: ClaudianPlugin) {
     this.plugin = plugin;
@@ -81,6 +87,24 @@ export class PiBridgeClient {
     this.readyCwd = null;
     this.activeSessionId = null;
     this.send({ type: 'reset', id });
+  }
+
+  async listSkills(): Promise<PiSkillInfo[]> {
+    await this.ensureProcess();
+    const id = this.nextId('list_skills');
+    return new Promise<PiSkillInfo[]>((resolve, reject) => {
+      this.listSkillsPending.set(id, { resolve, reject });
+      this.send({ type: 'list_skills', id });
+    });
+  }
+
+  async discoverSkills(cwd: string): Promise<PiSkillInfo[]> {
+    await this.ensureProcess();
+    const id = this.nextId('discover_skills');
+    return new Promise<PiSkillInfo[]>((resolve, reject) => {
+      this.listSkillsPending.set(id, { resolve, reject });
+      this.send({ type: 'discover_skills', id, cwd });
+    });
   }
 
   dispose(): void {
@@ -251,6 +275,16 @@ export class PiBridgeClient {
       return;
     }
 
+    if (message.type === 'list_skills_ok') {
+      const pending = this.listSkillsPending.get(message.id);
+      if (!pending) {
+        return;
+      }
+      this.listSkillsPending.delete(message.id);
+      pending.resolve(message.skills);
+      return;
+    }
+
     if (message.type === 'error') {
       if (message.id) {
         const initPending = this.initPending.get(message.id);
@@ -264,6 +298,13 @@ export class PiBridgeClient {
         if (promptPending) {
           this.promptPending.delete(message.id);
           promptPending.reject(new Error(message.message));
+          return;
+        }
+
+        const listSkillsPending = this.listSkillsPending.get(message.id);
+        if (listSkillsPending) {
+          this.listSkillsPending.delete(message.id);
+          listSkillsPending.reject(new Error(message.message));
           return;
         }
       }
@@ -291,6 +332,11 @@ export class PiBridgeClient {
 
     for (const [id, pending] of this.promptPending.entries()) {
       this.promptPending.delete(id);
+      pending.reject(error);
+    }
+
+    for (const [id, pending] of this.listSkillsPending.entries()) {
+      this.listSkillsPending.delete(id);
       pending.reject(error);
     }
 

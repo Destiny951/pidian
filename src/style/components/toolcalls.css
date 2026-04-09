@@ -264,3 +264,18 @@
 .claudian-tool-result-item:last-child {
   margin-bottom: 0;
 }
+
+.claudian-skill-call {
+  margin: 8px 0;
+  padding: 8px 12px;
+  background: var(--background-secondary);
+  border-radius: 6px;
+  border: 1px solid var(--background-modifier-border);
+}
+
+.claudian-skill-args {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-top: 4px;
+  padding-left: 24px;
+}

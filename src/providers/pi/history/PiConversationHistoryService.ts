@@ -125,6 +125,59 @@ function toChatMessages(entries: PiSessionEntry[], sessionId: string): ChatMessa
   return messages;
 }
 
+function normalizeUserContextBlocks(messages: ChatMessage[]): ChatMessage[] {
+  const result: ChatMessage[] = [];
+
+  for (const msg of messages) {
+    if (msg.role !== 'user') {
+      result.push(msg);
+      continue;
+    }
+
+    const parsed = parseUserPromptForDisplay(msg.content, msg.displayContent);
+    result.push({
+      ...msg,
+      displayContent: parsed.userText,
+      ...(parsed.contextBlocks.length > 0 ? { contentBlocks: parsed.contextBlocks } : {}),
+    });
+  }
+
+  return result;
+}
+
+function parseUserPromptForDisplay(content: string, displayContent?: string): {
+  userText: string;
+  contextBlocks: Array<{ type: 'context'; tag: string; content: string }>;
+} {
+  let working = (content || '').trim();
+  const contextBlocks: Array<{ type: 'context'; tag: string; content: string }> = [];
+
+  const slashSkillMatch = working.match(/^\/skill:(\S+)(?:\s+([^\n]*))?/);
+  if (slashSkillMatch) {
+    contextBlocks.push({ type: 'context', tag: `skill name="${slashSkillMatch[1]}"`, content: '' });
+    working = slashSkillMatch[2]?.trim() ?? '';
+  }
+
+  const expandedSkillMatch = working.match(/^<skill\s+name="([^"]+)"[^>]*>[\s\S]*?<\/skill>/);
+  if (expandedSkillMatch) {
+    contextBlocks.push({ type: 'context', tag: `skill name="${expandedSkillMatch[1]}"`, content: '' });
+    working = working.slice(expandedSkillMatch[0].length).trim();
+  }
+
+  const xmlTagRegex = /\n\n<(current_note|editor_selection|editor_cursor|context_files|canvas_selection|browser_selection)([^>]*)>\n([\s\S]*?)\n<\/\1>/g;
+  working = working.replace(xmlTagRegex, (_full, name: string, attrs: string, body: string) => {
+    const tag = `${name}${attrs ?? ''}`.trim();
+    contextBlocks.push({ type: 'context', tag, content: body.trim() });
+    return '';
+  }).trim();
+
+  const fallbackDisplay = (displayContent ?? '').trim();
+  return {
+    userText: working || fallbackDisplay,
+    contextBlocks,
+  };
+}
+
 function extractDisplayContent(content: string): string | undefined {
   const extracted = extractContentBeforeXmlContext(content);
   if (extracted) {
@@ -176,7 +229,7 @@ export class PiConversationHistoryService implements ProviderConversationHistory
     }
 
     const entries = readJsonlEntries(sessionFilePath);
-    const messages = toChatMessages(entries, sessionId);
+    const messages = normalizeUserContextBlocks(toChatMessages(entries, sessionId));
     if (messages.length === 0) {
       this.hydratedConversationKeys.delete(conversation.id);
       return;

@@ -115,7 +115,7 @@ describe('PiEventAdapter', () => {
 
       const startEvent: PiEvent = {
         type: 'tool_execution_start',
-        toolUseId: 'tool-1',
+        toolCallId: 'tool-1',
         toolName: 'read',
       };
 
@@ -153,7 +153,7 @@ describe('PiEventAdapter', () => {
 
       const startEvent: PiEvent = {
         type: 'tool_execution_start',
-        toolUseId: 'tool-1',
+        toolCallId: 'tool-1',
         toolName: 'read',
       };
 
@@ -192,7 +192,7 @@ describe('PiEventAdapter', () => {
 
       const startEvent: PiEvent = {
         type: 'tool_execution_start',
-        toolUseId: 'tool-1',
+        toolCallId: 'tool-1',
         toolName: 'bash',
       };
 
@@ -211,7 +211,7 @@ describe('PiEventAdapter', () => {
     it('should handle unknown tool call id', () => {
       const startEvent: PiEvent = {
         type: 'tool_execution_start',
-        toolUseId: 'unknown-tool',
+        toolCallId: 'unknown-tool',
         toolName: 'read',
       };
 
@@ -230,7 +230,7 @@ describe('PiEventAdapter', () => {
     it('should convert to tool_result StreamChunk', () => {
       const event: PiEvent = {
         type: 'tool_execution_end',
-        toolUseId: 'tool-1',
+        toolCallId: 'tool-1',
         result: 'file content here',
         isError: false,
       };
@@ -240,6 +240,7 @@ describe('PiEventAdapter', () => {
       expect(chunk).toEqual({
         type: 'tool_result',
         id: 'tool-1',
+        name: 'unknown',
         content: 'file content here',
         isError: false,
       });
@@ -248,7 +249,7 @@ describe('PiEventAdapter', () => {
     it('should handle error result', () => {
       const event: PiEvent = {
         type: 'tool_execution_end',
-        toolUseId: 'tool-1',
+        toolCallId: 'tool-1',
         result: 'Error: file not found',
         isError: true,
       };
@@ -258,6 +259,7 @@ describe('PiEventAdapter', () => {
       expect(chunk).toEqual({
         type: 'tool_result',
         id: 'tool-1',
+        name: 'unknown',
         content: 'Error: file not found',
         isError: true,
       });
@@ -266,7 +268,7 @@ describe('PiEventAdapter', () => {
     it('should default isError to false', () => {
       const event: PiEvent = {
         type: 'tool_execution_end',
-        toolUseId: 'tool-1',
+        toolCallId: 'tool-1',
         result: 'success',
       };
 
@@ -275,6 +277,7 @@ describe('PiEventAdapter', () => {
       expect(chunk).toEqual({
         type: 'tool_result',
         id: 'tool-1',
+        name: 'unknown',
         content: 'success',
         isError: false,
       });

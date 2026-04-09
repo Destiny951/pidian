@@ -1,5 +1,5 @@
 import type { App, Component } from 'obsidian';
-import { MarkdownRenderer, Notice } from 'obsidian';
+import { MarkdownRenderer, Notice, setIcon } from 'obsidian';
 
 import { DEFAULT_CHAT_PROVIDER_ID, type ProviderCapabilities } from '../../../core/providers/types';
 import {
@@ -98,7 +98,8 @@ export class MessageRenderer {
     // Skip empty bubble for image-only messages
     if (msg.role === 'user') {
       const textToShow = msg.displayContent ?? msg.content;
-      if (!textToShow) {
+      const hasContextBlocks = (msg.contentBlocks ?? []).some((block) => block.type === 'context');
+      if (!textToShow && !hasContextBlocks) {
         this.scrollToBottom();
         const lastChild = this.messagesEl.lastElementChild as HTMLElement;
         return lastChild ?? this.messagesEl;
@@ -122,6 +123,7 @@ export class MessageRenderer {
         void this.renderContent(textEl, textToShow);
         this.addUserCopyButton(msgEl, textToShow);
       }
+      this.renderUserContextBlocks(contentEl, msg.contentBlocks);
       if (this.rewindCallback || this.forkCallback) {
         this.liveMessageEls.set(msg.id, msgEl);
       }
@@ -154,6 +156,8 @@ export class MessageRenderer {
       const textEl = contentEl.createDiv({ cls: 'claudian-text-block' });
       void this.renderContent(textEl, textToShow);
     }
+
+    this.renderUserContextBlocks(contentEl, msg.contentBlocks);
 
     const toolbar = msgEl.querySelector('.claudian-user-msg-actions') as HTMLElement | null;
     if (toolbar) {
@@ -228,7 +232,8 @@ export class MessageRenderer {
     // Skip empty bubble for image-only messages
     if (msg.role === 'user') {
       const textToShow = msg.displayContent ?? msg.content;
-      if (!textToShow) {
+      const hasContextBlocks = (msg.contentBlocks ?? []).some((block) => block.type === 'context');
+      if (!textToShow && !hasContextBlocks) {
         return;
       }
     }
@@ -250,6 +255,7 @@ export class MessageRenderer {
         void this.renderContent(textEl, textToShow);
         this.addUserCopyButton(msgEl, textToShow);
       }
+      this.renderUserContextBlocks(contentEl, msg.contentBlocks);
       if (msg.userMessageId && this.isRewindEligible(allMessages, index)) {
         if (this.rewindCallback) {
           this.addRewindButton(msgEl, msg.id);
@@ -329,6 +335,8 @@ export class MessageRenderer {
 
           this.renderTaskSubagent(contentEl, taskToolCall, block.mode);
           renderedToolIds.add(taskToolCall.id);
+        } else if (block.type === 'skill') {
+          this.renderSkillBlock(contentEl, block.skillName, block.args);
         }
       }
 
@@ -792,6 +800,147 @@ export class MessageRenderer {
       requestAnimationFrame(() => {
         this.messagesEl.scrollTop = this.messagesEl.scrollHeight;
       });
+    }
+  }
+
+  private renderSkillBlock(contentEl: HTMLElement, skillName: string, args?: string): void {
+    const skillEl = contentEl.createDiv({ cls: 'claudian-skill-call' });
+
+    const header = skillEl.createDiv({ cls: 'claudian-tool-header' });
+
+    const iconEl = header.createSpan({ cls: 'claudian-tool-icon' });
+    setIcon(iconEl, 'zap');
+
+    const nameEl = header.createSpan({ cls: 'claudian-tool-name' });
+    nameEl.setText('Skill');
+
+    const summaryEl = header.createSpan({ cls: 'claudian-tool-summary' });
+    summaryEl.setText(skillName);
+
+    if (args) {
+      const argsEl = skillEl.createDiv({ cls: 'claudian-skill-args' });
+      argsEl.setText(args);
+    }
+  }
+
+  private renderUserContextBlocks(contentEl: HTMLElement, blocks?: ChatMessage['contentBlocks']): void {
+    const contextBlocks = (blocks ?? []).filter(
+      (block): block is Extract<NonNullable<ChatMessage['contentBlocks']>[number], { type: 'context' }> => block.type === 'context',
+    );
+
+    if (contextBlocks.length === 0) {
+      return;
+    }
+
+    const detailsEl = contentEl.createEl('details', { cls: 'claudian-user-context' });
+    const summaryEl = detailsEl.createEl('summary', { cls: 'claudian-user-context-summary' });
+    summaryEl.setText(`Context (${contextBlocks.length})`);
+
+    const bodyEl = detailsEl.createDiv({ cls: 'claudian-user-context-list' });
+    for (const block of contextBlocks) {
+      const parsed = this.parseContextTag(block.tag, block.content);
+      const cardEl = bodyEl.createDiv({ cls: 'claudian-user-context-card' });
+
+      const headerEl = cardEl.createDiv({ cls: 'claudian-user-context-header' });
+      const iconEl = headerEl.createSpan({ cls: 'claudian-user-context-icon' });
+      setIcon(iconEl, parsed.icon);
+
+      const metaEl = headerEl.createDiv({ cls: 'claudian-user-context-meta' });
+      metaEl.createDiv({ cls: 'claudian-user-context-title', text: parsed.title });
+      if (parsed.summary) {
+        metaEl.createDiv({ cls: 'claudian-user-context-subtitle', text: parsed.summary });
+      }
+
+      if (parsed.details) {
+        const detailsNode = cardEl.createEl('details', { cls: 'claudian-user-context-details' });
+        detailsNode.createEl('summary', { text: '查看内容' });
+        detailsNode.createEl('pre', {
+          cls: 'claudian-user-context-content',
+          text: parsed.details,
+        });
+      }
+    }
+  }
+
+  private parseContextTag(tag: string, content: string): {
+    icon: string;
+    title: string;
+    summary?: string;
+    details?: string;
+  } {
+    const match = tag.match(/^(\S+)(.*)$/);
+    const tagName = match?.[1] ?? tag;
+    const attrText = match?.[2] ?? '';
+    const attrs = new Map<string, string>();
+    const attrRegex = /(\w+)="([^"]*)"/g;
+    let m: RegExpExecArray | null;
+    while ((m = attrRegex.exec(attrText)) !== null) {
+      attrs.set(m[1], m[2]);
+    }
+
+    const trimmed = content.trim();
+    const short = trimmed.length > 120 ? `${trimmed.slice(0, 120)}...` : trimmed;
+
+    switch (tagName) {
+      case 'skill':
+        return {
+          icon: 'zap',
+          title: 'Skill',
+          summary: attrs.get('name') ?? 'unknown',
+        };
+      case 'current_note':
+        return {
+          icon: 'file-text',
+          title: 'Current note',
+          summary: trimmed || 'No note path',
+        };
+      case 'editor_selection':
+        return {
+          icon: 'scissors',
+          title: 'Editor selection',
+          summary: attrs.get('path') ?? 'current note',
+          details: trimmed,
+        };
+      case 'editor_cursor':
+        return {
+          icon: 'crosshair',
+          title: 'Editor cursor',
+          summary: attrs.get('path') ?? 'current note',
+          details: trimmed,
+        };
+      case 'browser_selection':
+        return {
+          icon: 'globe',
+          title: 'Browser selection',
+          summary: attrs.get('title') || attrs.get('url') || attrs.get('source') || short,
+          details: trimmed,
+        };
+      case 'canvas_selection':
+        return {
+          icon: 'shapes',
+          title: 'Canvas selection',
+          summary: attrs.get('path') ?? short,
+          details: trimmed,
+        };
+      case 'context_files': {
+        const files = trimmed
+          .split(',')
+          .map((item) => item.trim())
+          .filter(Boolean);
+        return {
+          icon: 'files',
+          title: 'Context files',
+          summary: files.length > 0 ? `${files.length} files` : 'No files',
+          details: files.join('\n') || trimmed,
+        };
+      }
+      default:
+        return {
+          icon: 'braces',
+          title: tagName,
+          summary: short,
+          details: trimmed,
+        };
     }
   }
 

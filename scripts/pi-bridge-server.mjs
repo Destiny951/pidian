@@ -186,6 +186,89 @@ async function handleReset(message) {
   }
 }
 
+async function handleListSkills(message) {
+  if (!session) {
+    write({ type: 'error', id: message.id, message: 'Session not initialized. Send init first.' });
+    return;
+  }
+
+  try {
+    const commands = await session.getCommands();
+    const skills = commands
+      .filter((cmd) => cmd.source === 'skill')
+      .map((cmd) => ({
+        name: cmd.name,
+        description: cmd.description,
+        source: cmd.source,
+        sourceInfo: {
+          path: cmd.sourceInfo?.path,
+        },
+      }));
+    write({ type: 'list_skills_ok', id: message.id, skills });
+  } catch (error) {
+    write({ type: 'error', id: message.id, message: toErrorMessage(error) });
+  }
+}
+
+async function handleDiscoverSkills(message) {
+  if (!message.cwd || typeof message.cwd !== 'string') {
+    write({ type: 'error', id: message.id, message: 'Missing cwd in discover_skills request' });
+    return;
+  }
+
+  try {
+    const sdk = await loadSdk();
+    const { DefaultResourceLoader, SettingsManager, loadSkills } = sdk;
+
+    const agentDir = process.env.PI_AGENT_DIR || DEFAULT_AGENT_DIR;
+    let resourceLoader;
+
+    if (DefaultResourceLoader && SettingsManager?.inMemory) {
+      try {
+        const settingsManager = SettingsManager.inMemory();
+        resourceLoader = new DefaultResourceLoader({
+          cwd: message.cwd,
+          agentDir,
+          settingsManager,
+        });
+        await resourceLoader.reload();
+      } catch {
+        resourceLoader = undefined;
+      }
+    }
+
+    let skills = [];
+    if (resourceLoader) {
+      const result = resourceLoader.getSkills();
+      skills = result.skills.map((skill) => ({
+        name: skill.name,
+        description: skill.description,
+        source: 'skill',
+        sourceInfo: {
+          path: skill.filePath,
+        },
+      }));
+    } else {
+      const result = await loadSkills({
+        cwd: message.cwd,
+        agentDir,
+      });
+      skills = result.skills.map((skill) => ({
+        name: skill.name,
+        description: skill.description,
+        source: 'skill',
+        sourceInfo: {
+          path: skill.filePath,
+        },
+      }));
+    }
+
+    write({ type: 'list_skills_ok', id: message.id, skills });
+  } catch (error) {
+    write({ type: 'error', id: message.id, message: toErrorMessage(error) });
+  }
+}
+
 const rl = createInterface({
   input: process.stdin,
   crlfDelay: Infinity,
@@ -222,6 +305,12 @@ rl.on('line', async (line) => {
       break;
     case 'reset':
       await handleReset(message);
+      break;
+    case 'list_skills':
+      await handleListSkills(message);
+      break;
+    case 'discover_skills':
+      await handleDiscoverSkills(message);
       break;
     default:
       write({ type: 'error', id: message.id, message: `Unknown request type: ${message.type}` });
