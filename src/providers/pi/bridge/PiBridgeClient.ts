@@ -3,7 +3,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 import type ClaudianPlugin from '../../../main';
-import { findNodeExecutable } from '../../../utils/env';
+import { findNodeExecutable, getEnhancedPath, parseEnvironmentVariables } from '../../../utils/env';
 import { getVaultPath } from '../../../utils/path';
 import type { PiEvent } from '../adapters/types';
 import type { BridgeRequest, BridgeResponse } from './protocol';
@@ -24,6 +24,7 @@ export class PiBridgeClient {
   private proc: ChildProcessWithoutNullStreams | null = null;
   private stdoutBuffer = '';
   private sequence = 0;
+  private processEnvSignature: string | null = null;
   private readyCwd: string | null = null;
   private activeSessionId: string | null = null;
   private initPending = new Map<string, InitPending>();
@@ -91,8 +92,16 @@ export class PiBridgeClient {
   }
 
   private async ensureProcess(): Promise<void> {
+    const { env, signature } = this.buildBridgeEnvironment();
+
     if (this.proc && !this.proc.killed) {
-      return;
+      if (this.processEnvSignature === signature) {
+        return;
+      }
+
+      this.handleProcessExit(new Error('PI bridge restarting due to environment changes'));
+      this.proc.kill();
+      this.proc = null;
     }
 
     const scriptPath = this.resolveBridgeScriptPath();
@@ -100,12 +109,13 @@ export class PiBridgeClient {
 
     const child = spawn(nodePath, [scriptPath], {
       cwd: process.cwd(),
-      env: process.env,
+      env,
       stdio: ['pipe', 'pipe', 'pipe'],
       windowsHide: true,
     });
 
     this.proc = child;
+    this.processEnvSignature = signature;
     this.stdoutBuffer = '';
 
     child.stdout.on('data', (chunk: Buffer | string) => {
@@ -126,6 +136,38 @@ export class PiBridgeClient {
     child.on('exit', (code, signal) => {
       this.handleProcessExit(new Error(`PI bridge exited (code=${code ?? 'null'}, signal=${signal ?? 'null'})`));
     });
+  }
+
+  private buildBridgeEnvironment(): {
+    env: Record<string, string>;
+    signature: string;
+  } {
+    const customEnv = parseEnvironmentVariables(this.plugin.getActiveEnvironmentVariables('pi'));
+    const baseEnv = Object.fromEntries(
+      Object.entries(process.env).filter((entry): entry is [string, string] => entry[1] !== undefined),
+    );
+
+    const env: Record<string, string> = {
+      ...baseEnv,
+      ...customEnv,
+      PATH: getEnhancedPath(customEnv.PATH),
+    };
+
+    if (!env.PI_AGENT_DIR) {
+      const home = env.HOME ?? process.env.HOME;
+      if (home) {
+        env.PI_AGENT_DIR = path.join(home, '.pi', 'agent');
+      }
+    }
+
+    const signature = JSON.stringify({
+      customEnv,
+      PATH: env.PATH,
+      PI_AGENT_DIR: env.PI_AGENT_DIR ?? '',
+      PI_SDK_PATH: env.PI_SDK_PATH ?? '',
+    });
+
+    return { env, signature };
   }
 
   private resolveBridgeScriptPath(): string {
@@ -240,6 +282,7 @@ export class PiBridgeClient {
   private handleProcessExit(error: Error): void {
     this.readyCwd = null;
     this.activeSessionId = null;
+    this.processEnvSignature = null;
 
     for (const [id, pending] of this.initPending.entries()) {
       this.initPending.delete(id);

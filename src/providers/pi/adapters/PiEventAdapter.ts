@@ -8,6 +8,45 @@ export interface PiEventAdapterOptions {
 
 export class PiEventAdapter {
   private toolCallBuffers = new Map<string, { name: string; args: string }>();
+  private executionToToolCallId = new Map<string, string>();
+
+  private findBufferedToolCallIdByName(name?: string): string | null {
+    if (!name) {
+      return null;
+    }
+
+    for (const [toolCallId, buffer] of this.toolCallBuffers.entries()) {
+      if (buffer.name === name) {
+        return toolCallId;
+      }
+    }
+
+    return null;
+  }
+
+  private normalizeToolArgs(args: unknown): string {
+    if (typeof args === 'string') {
+      return args;
+    }
+
+    if (args == null) {
+      return '';
+    }
+
+    try {
+      return JSON.stringify(args);
+    } catch {
+      return String(args);
+    }
+  }
+
+  private parseToolInput(args: string): Record<string, unknown> {
+    try {
+      return JSON.parse(args || '{}') as Record<string, unknown>;
+    } catch {
+      return { raw: args };
+    }
+  }
 
   private normalizeToolResultContent(result: unknown): string {
     if (typeof result === 'string') {
@@ -52,7 +91,7 @@ export class PiEventAdapter {
           if (assistantEvent.toolCallId) {
             this.toolCallBuffers.set(assistantEvent.toolCallId, {
               name: assistantEvent.toolCall?.name ?? 'unknown',
-              args: '',
+              args: this.normalizeToolArgs(assistantEvent.toolCall?.arguments),
             });
           }
           return null;
@@ -65,38 +104,69 @@ export class PiEventAdapter {
           }
           return null;
         case 'toolcall_end':
-          return null;
+          if (!assistantEvent.toolCallId) {
+            return null;
+          }
+
+          const buffer = this.toolCallBuffers.get(assistantEvent.toolCallId);
+          if (!buffer) {
+            return null;
+          }
+
+          return {
+            type: 'tool_use',
+            id: assistantEvent.toolCallId,
+            name: buffer.name,
+            input: this.parseToolInput(buffer.args),
+          };
         default:
           return null;
       }
     }
 
     if (event.type === 'tool_execution_start') {
-      const buffer = this.toolCallBuffers.get(event.toolUseId) ?? { name: event.toolName, args: '' };
-      let input: Record<string, unknown>;
-      try {
-        input = JSON.parse(buffer.args || '{}');
-      } catch {
-        input = { raw: buffer.args };
+      let canonicalId = event.toolUseId;
+      if (!this.toolCallBuffers.has(canonicalId)) {
+        const matchedToolCallId = this.findBufferedToolCallIdByName(event.toolName);
+        if (matchedToolCallId) {
+          canonicalId = matchedToolCallId;
+          this.executionToToolCallId.set(event.toolUseId, matchedToolCallId);
+        }
       }
+
+      const buffer = this.toolCallBuffers.get(canonicalId) ?? { name: event.toolName, args: '' };
       return {
         type: 'tool_use',
-        id: event.toolUseId,
+        id: canonicalId,
         name: buffer.name,
-        input,
+        input: this.parseToolInput(buffer.args),
       };
     }
 
     if (event.type === 'tool_execution_end') {
+      let canonicalId = this.executionToToolCallId.get(event.toolUseId) ?? event.toolUseId;
+      if (!this.toolCallBuffers.has(canonicalId)) {
+        const matchedToolCallId = this.findBufferedToolCallIdByName(event.toolName);
+        if (matchedToolCallId) {
+          canonicalId = matchedToolCallId;
+        }
+      }
+
+      const buffer = this.toolCallBuffers.get(canonicalId);
+      const toolName = buffer?.name ?? event.toolName;
+      this.toolCallBuffers.delete(canonicalId);
+      this.executionToToolCallId.delete(event.toolUseId);
       return {
         type: 'tool_result',
-        id: event.toolUseId,
+        id: canonicalId,
+        name: toolName,
         content: this.normalizeToolResultContent(event.result),
         isError: event.isError ?? false,
       };
     }
 
     if (event.type === 'agent_end') {
+      this.executionToToolCallId.clear();
       return { type: 'done' };
     }
 

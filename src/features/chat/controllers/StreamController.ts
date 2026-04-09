@@ -525,7 +525,14 @@ export class StreamController {
   }
 
   private async handleToolResult(
-    chunk: { type: 'tool_result'; id: string; content: string; isError?: boolean; toolUseResult?: SDKToolUseResult },
+    chunk: {
+      type: 'tool_result';
+      id: string;
+      name?: string;
+      content: string;
+      isError?: boolean;
+      toolUseResult?: SDKToolUseResult;
+    },
     msg: ChatMessage
   ): Promise<void> {
     const { state, subagentManager } = this.deps;
@@ -564,7 +571,31 @@ export class StreamController {
       this.renderPendingTool(chunk.id);
     }
 
-    const existingToolCall = msg.toolCalls?.find(tc => tc.id === chunk.id);
+    let existingToolCall = msg.toolCalls?.find(tc => tc.id === chunk.id);
+
+    if (!existingToolCall && chunk.name) {
+      const fallbackToolCall: ToolCallInfo = {
+        id: chunk.id,
+        name: chunk.name,
+        input: {},
+        status: 'running',
+        isExpanded: false,
+      };
+      msg.toolCalls = msg.toolCalls || [];
+      msg.toolCalls.push(fallbackToolCall);
+      msg.contentBlocks = msg.contentBlocks || [];
+      msg.contentBlocks.push({ type: 'tool_use', toolId: chunk.id });
+
+      if (state.currentContentEl) {
+        state.pendingTools.set(chunk.id, {
+          toolCall: fallbackToolCall,
+          parentEl: state.currentContentEl,
+        });
+        this.renderPendingTool(chunk.id);
+      }
+
+      existingToolCall = fallbackToolCall;
+    }
 
     // Regular tool result
     const isBlocked = isBlockedToolResult(chunk.content, chunk.isError);

@@ -140,7 +140,14 @@ export type StreamChunk =
   | { type: 'text'; content: string }
   | { type: 'thinking'; content: string }
   | { type: 'tool_use'; id: string; name: string; input: Record<string, unknown> }
-  | { type: 'tool_result'; id: string; content: string; isError?: boolean; toolUseResult?: SDKToolUseResult }
+  | {
+    type: 'tool_result';
+    id: string;
+    name?: string;
+    content: string;
+    isError?: boolean;
+    toolUseResult?: SDKToolUseResult;
+  }
   | { type: 'tool_output'; id: string; content: string }
   | { type: 'error'; content: string }
   | { type: 'notice'; content: string; level?: 'info' | 'warning' }

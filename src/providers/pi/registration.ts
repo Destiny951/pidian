@@ -15,7 +15,7 @@ export const piProviderRegistration: ProviderRegistration = {
   blankTabOrder: 10,
   isEnabled: (settings) => getPiProviderSettings(settings).enabled,
   capabilities: PI_PROVIDER_CAPABILITIES,
-  environmentKeyPatterns: [],
+  environmentKeyPatterns: [/^PI_/i, /^MINIMAX_/i, /^UVX_PATH$/i],
   chatUIConfig: piChatUIConfig,
   settingsReconciler: {
     reconcileModelWithEnvironment: () => ({ changed: false, invalidatedConversations: [] }),

@@ -39,12 +39,18 @@ async function loadSdk() {
 
 async function ensureSession(cwd, requestedSessionId = null) {
 
-  if (session && sessionCwd === cwd && session.sessionId === requestedSessionId) {
+  if (
+    session
+    && sessionCwd === cwd
+    && (requestedSessionId == null || session.sessionId === requestedSessionId)
+  ) {
     return session;
   }
 
   const {
     SessionManager,
+    DefaultResourceLoader,
+    SettingsManager,
     bashTool,
     createAgentSession,
     editTool,
@@ -65,6 +71,22 @@ async function ensureSession(cwd, requestedSessionId = null) {
   }
 
   const agentDir = process.env.PI_AGENT_DIR || DEFAULT_AGENT_DIR;
+  let resourceLoader;
+
+  if (DefaultResourceLoader && SettingsManager?.inMemory) {
+    try {
+      const settingsManager = SettingsManager.inMemory();
+      resourceLoader = new DefaultResourceLoader({
+        cwd,
+        agentDir,
+        settingsManager,
+      });
+      await resourceLoader.reload();
+    } catch {
+      resourceLoader = undefined;
+    }
+  }
+
   let sessionManager;
   if (requestedSessionId) {
     try {
@@ -85,6 +107,7 @@ async function ensureSession(cwd, requestedSessionId = null) {
     cwd,
     agentDir,
     ...(sessionManager ? { sessionManager } : {}),
+    ...(resourceLoader ? { resourceLoader } : {}),
     tools: [readTool, bashTool, grepTool, findTool, lsTool, editTool, writeTool],
   });
 

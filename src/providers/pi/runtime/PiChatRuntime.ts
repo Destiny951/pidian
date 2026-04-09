@@ -49,13 +49,21 @@ export class PiChatRuntime implements ChatRuntime {
     return PI_PROVIDER_CAPABILITIES;
   }
 
-  async ensureReady(_options?: ChatRuntimeEnsureReadyOptions): Promise<boolean> {
-    if (this.ready && this.sessionId === this.desiredSessionId) return true;
+  async ensureReady(options?: ChatRuntimeEnsureReadyOptions): Promise<boolean> {
+    const force = options?.force === true;
+
+    if (!force && this.ready && this.sessionId === this.desiredSessionId) return true;
 
     const vaultPath = getVaultPath(this.plugin.app);
     if (!vaultPath) return false;
 
     try {
+      if (force) {
+        this.ready = false;
+        this.sessionId = null;
+        await this.bridge.reset();
+      }
+
       const resolvedSessionId = await this.bridge.ensureReady(vaultPath, this.desiredSessionId ?? undefined);
       this.sessionId = resolvedSessionId;
       this.ready = true;
