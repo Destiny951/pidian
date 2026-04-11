@@ -68,7 +68,12 @@ npm install -g @mariozechner/pi-coding-agent
 
 ### 从 Release 安装
 
-1. 下载 `main.js`、`manifest.json`、`styles.css`
+1. 下载以下 4 个文件：
+   - `main.js`
+   - `manifest.json`
+   - `styles.css`
+   - `pi-bridge-server.mjs`（必需，PI bridge sidecar）
+
 2. 放到你的 Vault 插件目录：
 
 ```text
@@ -116,6 +121,10 @@ src/
 ## 许可证
 
 MIT License，见 `LICENSE`。
+
+## 维护者
+
+本 Fork 由 [Destiny951](https://github.com/Destiny951) 维护。
 
 ## 致谢
 
