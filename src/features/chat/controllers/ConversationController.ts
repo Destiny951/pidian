@@ -386,6 +386,15 @@ export class ConversationController {
       ? agentService.buildSessionUpdates({ conversation, sessionInvalidated })
       : { updates: {} };
 
+    const slashCommands: Record<string, { type: 'skill' | 'prompt'; name: string }> = {};
+    const userMessages = state.messages.filter(msg => msg.role === 'user');
+    for (let i = 0; i < userMessages.length; i++) {
+      const msg = userMessages[i];
+      if (msg.slashCommand) {
+        slashCommands[i] = msg.slashCommand;
+      }
+    }
+
     const updates: Partial<Conversation> = {
       ...sessionUpdates,
       messages: state.messages,
@@ -393,6 +402,10 @@ export class ConversationController {
       externalContextPaths: externalContextPaths.length > 0 ? externalContextPaths : undefined,
       usage: state.usage ?? undefined,
       enabledMcpServers: enabledMcpServers.length > 0 ? enabledMcpServers : undefined,
+      providerState: {
+        ...(conversation?.providerState ?? {}),
+        ...(Object.keys(slashCommands).length > 0 ? { slashCommands } : {}),
+      },
     };
 
     if (updateLastResponse) {

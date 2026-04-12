@@ -157,7 +157,7 @@ function normalizeUserContextBlocks(messages: ChatMessage[]): ChatMessage[] {
       continue;
     }
 
-    const parsed = parseUserPromptForDisplay(msg.content, msg.displayContent);
+    const parsed = parseUserPromptForDisplay(msg.content, msg.displayContent, msg.slashCommand);
     result.push({
       ...msg,
       displayContent: parsed.userText,
@@ -168,29 +168,44 @@ function normalizeUserContextBlocks(messages: ChatMessage[]): ChatMessage[] {
   return result;
 }
 
-function parseUserPromptForDisplay(content: string, displayContent?: string): {
+function parseUserPromptForDisplay(
+  content: string,
+  displayContent?: string,
+  slashCommand?: { type: 'skill' | 'prompt'; name: string; args?: string },
+): {
   userText: string;
   contextBlocks: Array<{ type: 'context'; tag: string; content: string }>;
 } {
   let working = (content || '').trim();
   const contextBlocks: Array<{ type: 'context'; tag: string; content: string }> = [];
 
-  const slashSkillMatch = working.match(/^\/skill:(\S+)(?:\s+([^\n]*))?/);
-  if (slashSkillMatch) {
-    contextBlocks.push({ type: 'context', tag: `skill name="${slashSkillMatch[1]}"`, content: '' });
-    working = slashSkillMatch[2]?.trim() ?? '';
-  }
+  if (slashCommand) {
+    contextBlocks.push({ type: 'context', tag: `${slashCommand.type} name="${slashCommand.name}"`, content: '' });
+    const commandPattern = new RegExp(`^\\/(?:${slashCommand.type}:)?${slashCommand.name}(?:\\s+([\\s\\S]*))?`);
+    const match = working.match(commandPattern);
+    if (match) {
+      working = match[1]?.trim() ?? '';
+    } else {
+      working = slashCommand.args ?? '';
+    }
+  } else {
+    const slashSkillMatch = working.match(/^\/skill:(\S+)(?:\s+([^\n]*))?/);
+    if (slashSkillMatch) {
+      contextBlocks.push({ type: 'context', tag: `skill name="${slashSkillMatch[1]}"`, content: '' });
+      working = slashSkillMatch[2]?.trim() ?? '';
+    }
 
-  const slashPromptMatch = working.match(/^\/prompt:(\S+)(?:\s+([^\n]*))?/);
-  if (slashPromptMatch) {
-    contextBlocks.push({ type: 'context', tag: `prompt name="${slashPromptMatch[1]}"`, content: '' });
-    working = slashPromptMatch[2]?.trim() ?? '';
-  }
+    const slashPromptMatch = working.match(/^\/prompt:(\S+)(?:\s+([^\n]*))?/);
+    if (slashPromptMatch) {
+      contextBlocks.push({ type: 'context', tag: `prompt name="${slashPromptMatch[1]}"`, content: '' });
+      working = slashPromptMatch[2]?.trim() ?? '';
+    }
 
-  const expandedSkillMatch = working.match(/^<skill\s+name="([^"]+)"[^>]*>[\s\S]*?<\/skill>/);
-  if (expandedSkillMatch) {
-    contextBlocks.push({ type: 'context', tag: `skill name="${expandedSkillMatch[1]}"`, content: '' });
-    working = working.slice(expandedSkillMatch[0].length).trim();
+    const expandedSkillMatch = working.match(/^<skill\s+name="([^"]+)"[^>]*>[\s\S]*?<\/skill>/);
+    if (expandedSkillMatch) {
+      contextBlocks.push({ type: 'context', tag: `skill name="${expandedSkillMatch[1]}"`, content: '' });
+      working = working.slice(expandedSkillMatch[0].length).trim();
+    }
   }
 
   const xmlTagRegex = /\n\n<(current_note|editor_selection|editor_cursor|context_files|canvas_selection|browser_selection)([^>]*)>\n([\s\S]*?)\n<\/\1>/g;
@@ -258,12 +273,22 @@ export class PiConversationHistoryService implements ProviderConversationHistory
     }
 
     const entries = readJsonlEntries(sessionFilePath);
-    const messages = normalizeUserContextBlocks(toChatMessages(entries, sessionId));
-    if (messages.length === 0) {
+    const rawMessages = toChatMessages(entries, sessionId);
+    if (rawMessages.length === 0) {
       this.hydratedConversationKeys.delete(conversation.id);
       return;
     }
 
+    const slashCommands = conversation.providerState?.slashCommands as Record<string, { type: 'skill' | 'prompt'; name: string }> | undefined;
+    const rawUserMessages = rawMessages.filter(msg => msg.role === 'user');
+    for (let i = 0; i < rawUserMessages.length; i++) {
+      const msg = rawUserMessages[i];
+      if (slashCommands?.[i]) {
+        msg.slashCommand = slashCommands[i];
+      }
+    }
+
+    const messages = normalizeUserContextBlocks(rawMessages);
     conversation.messages = messages;
     conversation.providerState = {
       ...(conversation.providerState ?? {}),
@@ -295,10 +320,18 @@ export class PiConversationHistoryService implements ProviderConversationHistory
   buildPersistedProviderState(conversation: Conversation): Record<string, unknown> | undefined {
     const state = conversation.providerState ?? {};
     const sessionFilePath = state.sessionFilePath;
-    if (typeof sessionFilePath !== 'string' || !sessionFilePath) {
-      return undefined;
+    const slashCommands = state.slashCommands as Record<string, { type: 'skill' | 'prompt'; name: string }> | undefined;
+    const hasSlashCommands = slashCommands && Object.keys(slashCommands).length > 0;
+    
+    const result: Record<string, unknown> = {};
+    if (typeof sessionFilePath === 'string' && sessionFilePath) {
+      result.sessionFilePath = sessionFilePath;
     }
-    return { sessionFilePath };
+    if (hasSlashCommands) {
+      result.slashCommands = slashCommands;
+    }
+    
+    return Object.keys(result).length > 0 ? result : undefined;
   }
 
   private findSessionFilePath(vaultPath: string, sessionId: string): string | null {

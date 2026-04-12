@@ -37,6 +37,13 @@ export type ContentBlock =
   | { type: 'skill'; skillName: string; args?: string }
   | { type: 'context'; tag: string; content: string };
 
+/** Slash command metadata for prompt/skill invocations. */
+export interface SlashCommandMeta {
+  type: 'skill' | 'prompt';
+  name: string;
+  args?: string;
+}
+
 /** Chat message with content, tool calls, and attachments. */
 export interface ChatMessage {
   id: string;
@@ -61,6 +68,8 @@ export interface ChatMessage {
   userMessageId?: string;
   /** Provider-native assistant message identifier used for rewind/fork checkpoints. */
   assistantMessageId?: string;
+  /** Original slash command before expansion (for history display). */
+  slashCommand?: SlashCommandMeta;
 }
 
 /** Persisted conversation with messages and session state. */

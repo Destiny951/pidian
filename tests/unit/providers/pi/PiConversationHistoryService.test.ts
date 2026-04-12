@@ -79,4 +79,124 @@ describe('PiConversationHistoryService', () => {
     expect(conversation.messages[1].content).toBe('你好，我在。');
     expect(conversation.providerState).toEqual({ sessionFilePath: sessionFile });
   });
+
+  it('parses /prompt:xxx format from session and creates context block', async () => {
+    const tmpHome = fs.mkdtempSync(path.join(os.tmpdir(), 'pi-home-'));
+    process.env.HOME = tmpHome;
+
+    const vaultPath = '/tmp/project_di';
+    const sessionId = 'session-prompt';
+    const sessionDirName = '--tmp-project_di--';
+    const sessionDir = path.join(tmpHome, '.pi', 'agent', 'sessions', sessionDirName);
+    fs.mkdirSync(sessionDir, { recursive: true });
+
+    const sessionFile = path.join(sessionDir, `2026-04-12T00-00-00-000Z_${sessionId}.jsonl`);
+    fs.writeFileSync(
+      sessionFile,
+      [
+        JSON.stringify({ type: 'session', id: sessionId, cwd: vaultPath }),
+        JSON.stringify({
+          type: 'message',
+          id: 'u1',
+          timestamp: '2026-04-12T00:00:00.000Z',
+          message: {
+            role: 'user',
+            content: [{ type: 'text', text: '/prompt:test test arguments' }],
+            timestamp: 1712870400000,
+          },
+        }),
+        JSON.stringify({
+          type: 'message',
+          id: 'a1',
+          timestamp: '2026-04-12T00:00:01.000Z',
+          message: {
+            role: 'assistant',
+            content: [{ type: 'text', text: 'Response' }],
+            timestamp: 1712870401000,
+          },
+        }),
+      ].join('\n'),
+      'utf-8',
+    );
+
+    const service = new PiConversationHistoryService();
+    const conversation = makeConversation(sessionId);
+
+    await service.hydrateConversationHistory(conversation, vaultPath);
+
+    expect(conversation.messages).toHaveLength(2);
+    expect(conversation.messages[0].role).toBe('user');
+    expect(conversation.messages[0].content).toBe('/prompt:test test arguments');
+    expect(conversation.messages[0].displayContent).toBe('test arguments');
+    expect(conversation.messages[0].contentBlocks).toBeDefined();
+    expect(conversation.messages[0].contentBlocks).toHaveLength(1);
+    expect(conversation.messages[0].contentBlocks![0]).toEqual({
+      type: 'context',
+      tag: 'prompt name="test"',
+      content: '',
+    });
+    expect(conversation.messages[0].userMessageId).toBe('u1');
+  });
+
+  it('restores slashCommand from providerState for prompt messages', async () => {
+    const tmpHome = fs.mkdtempSync(path.join(os.tmpdir(), 'pi-home-'));
+    process.env.HOME = tmpHome;
+
+    const vaultPath = '/tmp/project_di';
+    const sessionId = 'session-restore';
+    const sessionDirName = '--tmp-project_di--';
+    const sessionDir = path.join(tmpHome, '.pi', 'agent', 'sessions', sessionDirName);
+    fs.mkdirSync(sessionDir, { recursive: true });
+
+    const sessionFile = path.join(sessionDir, `2026-04-12T00-00-00-000Z_${sessionId}.jsonl`);
+    fs.writeFileSync(
+      sessionFile,
+      [
+        JSON.stringify({ type: 'session', id: sessionId, cwd: vaultPath }),
+        JSON.stringify({
+          type: 'message',
+          id: 'u1',
+          timestamp: '2026-04-12T00:00:00.000Z',
+          message: {
+            role: 'user',
+            content: [{ type: 'text', text: '/test restored arguments' }],
+            timestamp: 1712870400000,
+          },
+        }),
+        JSON.stringify({
+          type: 'message',
+          id: 'a1',
+          timestamp: '2026-04-12T00:00:01.000Z',
+          message: {
+            role: 'assistant',
+            content: [{ type: 'text', text: 'Response' }],
+            timestamp: 1712870401000,
+          },
+        }),
+      ].join('\n'),
+      'utf-8',
+    );
+
+    const service = new PiConversationHistoryService();
+    const conversation = makeConversation(sessionId);
+    conversation.providerState = {
+      slashCommands: {
+        '0': { type: 'prompt', name: 'test' },
+      },
+    };
+
+    await service.hydrateConversationHistory(conversation, vaultPath);
+
+    expect(conversation.messages).toHaveLength(2);
+    expect(conversation.messages[0].role).toBe('user');
+    expect(conversation.messages[0].slashCommand).toEqual({ type: 'prompt', name: 'test' });
+    expect(conversation.messages[0].displayContent).toBe('restored arguments');
+    expect(conversation.messages[0].contentBlocks).toBeDefined();
+    expect(conversation.messages[0].contentBlocks).toHaveLength(1);
+    expect(conversation.messages[0].contentBlocks![0]).toEqual({
+      type: 'context',
+      tag: 'prompt name="test"',
+      content: '',
+    });
+  });
 });

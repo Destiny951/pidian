@@ -294,6 +294,7 @@ export class InputController {
       timestamp: Date.now(),
       images: imagesForMessage,
       ...(contextBlocks.length > 0 ? { contentBlocks: contextBlocks } : {}),
+      ...(commandType && commandName ? { slashCommand: { type: commandType, name: commandName, args: commandArgs ?? undefined } } : {}),
     };
     state.addMessage(userMsg);
     renderer.addMessage(userMsg);
