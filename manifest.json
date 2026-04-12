@@ -1,7 +1,7 @@
 {
   "id": "claudian",
   "name": "Claudian (PI Fork)",
-  "version": "2.0.2",
+  "version": "2.0.3",
   "minAppVersion": "1.4.5",
   "description": "Embeds PI agent in your Obsidian vault. Your vault becomes the agent's working directory with file read/write, search, bash, and multi-turn conversation support.",
   "author": "Destiny951",
