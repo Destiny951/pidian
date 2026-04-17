@@ -65,11 +65,10 @@
     }
   },
   "settings": {
-    "title": "Configuración de Claudian",
+    "title": "Configuración de Pidian",
     "tabs": {
       "general": "General",
-      "claude": "Claude",
-      "codex": "Codex"
+      "pi": "PI"
     },
     "display": "Pantalla",
     "conversations": "Conversaciones",
@@ -79,7 +78,7 @@
     "models": "Modelos",
     "experimental": "Experimental",
     "userName": {
-      "name": "¿Cómo debería Claudian llamarte?",
+      "name": "¿Cómo debería Pidian llamarte?",
       "desc": "Tu nombre para saludos personalizados (dejar vacío para saludos genéricos)"
     },
     "excludedTags": {
@@ -149,7 +148,7 @@
     },
     "hiddenSlashCommands": {
       "name": "Comandos ocultos",
-      "desc": "Oculta comandos slash específicos del menú desplegable. Útil para ocultar comandos de Claude Code que no son relevantes para Claudian. Ingresa nombres de comandos sin la barra inicial, uno por línea.",
+      "desc": "Oculta comandos slash específicos del menú desplegable. Útil para ocultar comandos de Claude Code que no son relevantes para Pidian. Ingresa nombres de comandos sin la barra inicial, uno por línea.",
       "placeholder": "commit\nbuild\ntest"
     },
     "mcpServers": {

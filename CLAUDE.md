@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-Claudian is an Obsidian plugin that embeds the PI agent runtime in a sidebar and inline-edit flow.
+Pidian is an Obsidian plugin that embeds the PI agent runtime in a sidebar and inline-edit flow.
 
 ## Architecture Status
 

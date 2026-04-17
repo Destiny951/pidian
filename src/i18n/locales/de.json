@@ -65,11 +65,10 @@
     }
   },
   "settings": {
-    "title": "Claudian Einstellungen",
+    "title": "Pidian Einstellungen",
     "tabs": {
       "general": "Allgemein",
-      "claude": "Claude",
-      "codex": "Codex"
+      "pi": "PI"
     },
     "display": "Anzeige",
     "conversations": "Unterhaltungen",
@@ -79,7 +78,7 @@
     "models": "Modelle",
     "experimental": "Experimentell",
     "userName": {
-      "name": "Wie soll Claudian dich nennen?",
+      "name": "Wie soll Pidian dich nennen?",
       "desc": "Dein Name für personalisierte Begrüßungen (leer lassen für allgemeine Begrüßungen)"
     },
     "excludedTags": {
@@ -149,7 +148,7 @@
     },
     "hiddenSlashCommands": {
       "name": "Ausgeblendete Befehle",
-      "desc": "Bestimmte Schrägstrich-Befehle aus dem Dropdown ausblenden. Nützlich, um Claude Code-Befehle auszublenden, die für Claudian nicht relevant sind. Gib Befehlsnamen ohne führenden Schrägstrich ein, einen pro Zeile.",
+      "desc": "Bestimmte Schrägstrich-Befehle aus dem Dropdown ausblenden. Nützlich, um Claude Code-Befehle auszublenden, die für Pidian nicht relevant sind. Gib Befehlsnamen ohne führenden Schrägstrich ein, einen pro Zeile.",
       "placeholder": "commit\nbuild\ntest"
     },
     "mcpServers": {

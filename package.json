@@ -1,7 +1,7 @@
 {
-  "name": "claudian",
+  "name": "pidian",
   "version": "2.0.3",
-  "description": "Claudian - PI agent embedded in Obsidian sidebar",
+  "description": "Pidian - PI agent embedded in Obsidian sidebar",
   "main": "main.js",
   "scripts": {
     "postinstall": "node scripts/postinstall.mjs",

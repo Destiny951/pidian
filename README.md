@@ -1,6 +1,6 @@
-# Claudian (PI Fork)
+# Pidian
 
-`Claudian` 是一个 Obsidian 桌面端插件，把 PI agent 直接嵌到知识库侧边栏里。
+`Pidian` 是一个 Obsidian 桌面端插件，把 PI agent 直接嵌到知识库侧边栏里。
 
 你的 Vault 会成为 Agent 的工作目录，支持读写文件、搜索、bash、多轮会话、技能触发与上下文引用。
 
@@ -68,7 +68,7 @@ npm install -g @mariozechner/pi-coding-agent
 
 ### 从 Release 安装
 
-1. 从 [Release 页面](https://github.com/Destiny951/claudian/releases) 下载以下 4 个文件：
+1. 从 [Release 页面](https://github.com/Destiny951/pidian/releases) 下载以下 4 个文件：
 
 | 文件 | 来源 | 说明 |
 |------|------|------|
@@ -80,16 +80,16 @@ npm install -g @mariozechner/pi-coding-agent
 2. 放到你的 Vault 插件目录：
 
 ```text
-/path/to/vault/.obsidian/plugins/claudian/
+/path/to/vault/.obsidian/plugins/pidian/
 ```
 
-3. 在 Obsidian 社区插件里启用 `Claudian`
+3. 在 Obsidian 社区插件里启用 `Pidian`
 
 ### 从源码开发
 
 ```bash
-git clone https://github.com/Destiny951/claudian.git
-cd claudian
+git clone https://github.com/Destiny951/pidian.git
+cd pidian
 npm install
 npm run dev
 ```

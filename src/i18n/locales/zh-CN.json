@@ -65,11 +65,10 @@
     }
   },
   "settings": {
-    "title": "Claudian 设置",
+    "title": "Pidian 设置",
     "tabs": {
       "general": "通用",
-      "claude": "Claude",
-      "codex": "Codex"
+      "pi": "PI"
     },
     "display": "显示",
     "conversations": "对话",
@@ -79,7 +78,7 @@
     "models": "模型",
     "experimental": "实验性功能",
     "userName": {
-      "name": "Claudian 应该如何称呼你？",
+      "name": "Pidian 应该如何称呼你？",
       "desc": "用于个性化问候的用户名（留空使用通用问候）"
     },
     "excludedTags": {
@@ -149,7 +148,7 @@
     },
     "hiddenSlashCommands": {
       "name": "隐藏命令",
-      "desc": "从下拉菜单中隐藏特定的斜杠命令。适用于隐藏与 Claudian 无关的 Claude Code 命令。每行输入一个命令名称，无需前导斜杠。",
+      "desc": "从下拉菜单中隐藏特定的斜杠命令。适用于隐藏与 Pidian 无关的 Claude Code 命令。每行输入一个命令名称，无需前导斜杠。",
       "placeholder": "commit\nbuild\ntest"
     },
     "mcpServers": {

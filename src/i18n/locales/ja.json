@@ -65,11 +65,10 @@
     }
   },
   "settings": {
-    "title": "Claudian 設定",
+    "title": "Pidian 設定",
     "tabs": {
       "general": "一般",
-      "claude": "Claude",
-      "codex": "Codex"
+      "pi": "PI"
     },
     "display": "表示",
     "conversations": "会話",
@@ -79,7 +78,7 @@
     "models": "モデル",
     "experimental": "実験的機能",
     "userName": {
-      "name": "Claudian はどのように呼びますか？",
+      "name": "Pidian はどのように呼びますか？",
       "desc": "パーソナライズされた挨拶に使用する名前（空欄で一般の挨拶）"
     },
     "excludedTags": {
@@ -149,7 +148,7 @@
     },
     "hiddenSlashCommands": {
       "name": "非表示コマンド",
-      "desc": "ドロップダウンから特定のスラッシュコマンドを非表示にします。Claudian に関係のない Claude Code コマンドを非表示にするのに便利です。先頭のスラッシュなしでコマンド名を1行に1つ入力してください。",
+      "desc": "ドロップダウンから特定のスラッシュコマンドを非表示にします。Pidian に関係のない Claude Code コマンドを非表示にするのに便利です。先頭のスラッシュなしでコマンド名を1行に1つ入力してください。",
       "placeholder": "commit\nbuild\ntest"
     },
     "mcpServers": {
