@@ -1,0 +1,5 @@
+{"file": ".trellis/workflow.md", "reason": "Project workflow and conventions"}
+{"file": ".trellis/spec/frontend/index.md", "reason": "Frontend development guide"}
+{"file": "AGENTS.md", "reason": "Project architecture and development commands"}
+{"file": "src/features/chat/CLAUDE.md", "reason": "Chat feature conventions"}
+{"file": "src/style/CLAUDE.md", "reason": "CSS conventions"}

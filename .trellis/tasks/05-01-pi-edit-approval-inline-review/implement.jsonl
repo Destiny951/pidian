@@ -1,0 +1,5 @@
+{"file": ".trellis/workflow.md", "reason": "Project workflow and conventions"}
+{"file": ".trellis/spec/frontend/index.md", "reason": "Frontend development guide"}
+{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "Cross-layer feature flow checklist"}
+{"file": ".trellis/tasks/05-01-pi-edit-approval-inline-review/prd.md", "reason": "Product requirements for PI edit approval"}
+{"file": ".trellis/tasks/05-01-pi-edit-approval-inline-review/implementation.md", "reason": "Implementation plan for PI edit approval"}

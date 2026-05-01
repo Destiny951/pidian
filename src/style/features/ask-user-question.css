@@ -1,0 +1,332 @@
+/* AskUserQuestion - inline widget rendered in chat panel */
+
+.pidian-ask-question-inline {
+  font-family: var(--font-monospace);
+  font-size: 12px;
+  outline: none;
+}
+
+.pidian-ask-inline-title {
+  font-weight: 700;
+  color: var(--text-muted);
+  padding: 6px 10px 0;
+}
+
+/* ── Tab bar ─────────────────────────────────── */
+
+.pidian-ask-tab-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-bottom: 1px solid var(--background-modifier-border);
+  line-height: 1.4;
+}
+
+.pidian-ask-tab {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 10px;
+  border-radius: 3px;
+  cursor: pointer;
+  user-select: none;
+  color: var(--text-muted);
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+.pidian-ask-tab:hover {
+  color: var(--text-normal);
+}
+
+.pidian-ask-tab.is-active {
+  background: hsla(55, 30%, 50%, 0.18);
+  color: var(--text-normal);
+}
+
+.pidian-ask-tab-label {
+  font-weight: 600;
+  max-width: 14ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pidian-ask-tab-tick {
+  color: var(--color-green);
+  font-weight: 700;
+}
+
+.pidian-ask-tab-submit-check {
+  color: var(--color-green);
+  white-space: pre;
+}
+
+/* ── Content area ────────────────────────────── */
+
+.pidian-ask-content {
+  padding: 8px 10px;
+}
+
+.pidian-ask-question-text {
+  font-weight: 700;
+  color: var(--text-normal);
+  margin-bottom: 8px;
+  line-height: 1.4;
+}
+
+/* ── Item list ───────────────────────────────── */
+
+.pidian-ask-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 8px;
+}
+
+.pidian-ask-item {
+  display: flex;
+  align-items: flex-start;
+  padding: 3px 4px;
+  cursor: pointer;
+  line-height: 1.4;
+  color: var(--text-normal);
+  border-radius: 3px;
+}
+
+.pidian-ask-item:hover {
+  background: var(--background-modifier-hover);
+}
+
+.pidian-ask-cursor {
+  display: inline-block;
+  width: 2ch;
+  flex-shrink: 0;
+  color: var(--text-accent);
+  font-weight: 700;
+}
+
+.pidian-ask-item-num {
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.pidian-ask-item-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.pidian-ask-label-row {
+  display: flex;
+  align-items: baseline;
+}
+
+.pidian-ask-item-label {
+  font-weight: 600;
+}
+
+.pidian-ask-item-desc {
+  color: var(--text-muted);
+  font-weight: 400;
+  line-height: 1.4;
+  margin-top: 1px;
+}
+
+/* Selected items: green text */
+.pidian-ask-item.is-selected .pidian-ask-item-label {
+  color: var(--color-green);
+}
+
+/* Disabled items: muted text */
+.pidian-ask-item.is-disabled .pidian-ask-item-label {
+  color: var(--text-faint);
+}
+
+/* ── Multi-select brackets ───────────────────── */
+
+.pidian-ask-check {
+  color: var(--text-faint);
+  flex-shrink: 0;
+  white-space: pre;
+}
+
+.pidian-ask-check.is-checked {
+  color: var(--color-green);
+}
+
+/* ── Single-select check mark ────────────────── */
+
+.pidian-ask-check-mark {
+  color: var(--color-green);
+  font-weight: 700;
+}
+
+/* ── Custom input ────────────────────────────── */
+
+.pidian-ask-item input.pidian-ask-custom-text,
+.pidian-ask-item input.pidian-ask-custom-text:hover,
+.pidian-ask-item input.pidian-ask-custom-text:focus {
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  font-family: var(--font-monospace);
+  font-size: inherit;
+  color: var(--text-normal);
+  outline: none;
+  padding: 0;
+  width: 0;
+  height: auto;
+  min-height: 0;
+  line-height: 1.4;
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.pidian-ask-custom-text::placeholder {
+  color: var(--text-faint);
+}
+
+/* ── Submit review tab ───────────────────────── */
+
+.pidian-ask-review-title {
+  font-weight: 700;
+  color: var(--text-normal);
+  margin-bottom: 6px;
+}
+
+.pidian-ask-review {
+  font-family: var(--font-monospace);
+  margin-bottom: 16px;
+}
+
+.pidian-tool-content .pidian-ask-review {
+  font-size: 12px;
+}
+
+.pidian-ask-review:last-child {
+  margin-bottom: 0;
+}
+
+.pidian-ask-review-pair {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.pidian-ask-review-pair:last-child {
+  margin-bottom: 0;
+}
+
+.pidian-ask-review-num {
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.pidian-ask-review-body {
+  min-width: 0;
+}
+
+.pidian-ask-review-q-text {
+  color: var(--text-muted);
+}
+
+.pidian-ask-review-a-text {
+  color: var(--text-normal);
+}
+
+.pidian-ask-review-empty {
+  color: var(--text-faint);
+  font-style: italic;
+}
+
+.pidian-ask-review-prompt {
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+
+/* ── Hints ───────────────────────────────────── */
+
+.pidian-ask-hints {
+  color: var(--text-faint);
+  padding-top: 6px;
+  border-top: 1px solid var(--background-modifier-border);
+}
+
+/* ── Approval header (inline permission request) ── */
+
+.pidian-ask-approval-info {
+  padding: 8px 10px;
+}
+
+.pidian-ask-approval-tool {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  background: var(--background-secondary);
+  border-radius: 6px;
+  margin-bottom: 8px;
+}
+
+.pidian-ask-approval-icon {
+  color: var(--claudian-brand);
+}
+
+.pidian-ask-approval-tool-name {
+  font-weight: 600;
+  color: var(--text-normal);
+}
+
+.pidian-ask-approval-reason {
+  color: var(--text-muted);
+  font-size: 12px;
+  margin-bottom: 6px;
+}
+
+.pidian-ask-approval-blocked-path {
+  font-family: var(--font-monospace);
+  font-size: 11px;
+  color: var(--text-muted);
+  padding: 3px 6px;
+  background: var(--background-primary-alt);
+  border-radius: 4px;
+  margin-bottom: 6px;
+  word-break: break-all;
+}
+
+.pidian-ask-approval-agent {
+  color: var(--text-muted);
+  font-size: 12px;
+  margin-bottom: 6px;
+}
+
+.pidian-ask-approval-desc {
+  padding: 8px 10px;
+  background: var(--background-primary-alt);
+  border-radius: 6px;
+  font-family: var(--font-monospace);
+  font-size: 12px;
+  color: var(--text-normal);
+  word-break: break-all;
+}
+
+.pidian-ask-approval-preview-summary {
+  display: flex;
+  gap: 10px;
+  color: var(--text-muted);
+  font-family: var(--font-monospace);
+  font-size: 12px;
+  padding: 8px 0 4px;
+}
+
+.pidian-ask-approval-preview-error {
+  color: var(--text-error);
+  font-size: 12px;
+  padding: 8px;
+  background: var(--background-modifier-error);
+  border-radius: 6px;
+}

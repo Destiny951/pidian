@@ -1,0 +1,5 @@
+{"file": ".opencode/commands/trellis/finish-work.md", "reason": "Finish work checklist"}
+{"file": ".opencode/commands/trellis/check-frontend.md", "reason": "Frontend check spec"}
+{"file": "AGENTS.md", "reason": "Project architecture and development commands"}
+{"file": "src/features/chat/CLAUDE.md", "reason": "Chat feature conventions"}
+{"file": "src/style/CLAUDE.md", "reason": "CSS conventions"}

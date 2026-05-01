@@ -1,0 +1,383 @@
+.pidian-diff-view {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--background-primary);
+}
+
+.pidian-diff-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--background-modifier-border);
+  background: var(--background-secondary);
+}
+
+.pidian-diff-header-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+}
+
+.pidian-diff-header-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  color: var(--text-muted);
+}
+
+.pidian-diff-header-title {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.pidian-diff-header-op {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+}
+
+.pidian-diff-header-path {
+  font-weight: 600;
+  font-size: 13px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pidian-diff-header-stats {
+  display: flex;
+  gap: 8px;
+  font-family: var(--font-monospace);
+  font-size: 12px;
+}
+
+.pidian-diff-stat-added {
+  color: var(--color-green);
+}
+
+.pidian-diff-stat-removed {
+  color: var(--color-red);
+}
+
+.pidian-diff-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.pidian-diff-action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.pidian-diff-action-btn:hover {
+  background: var(--background-modifier-hover);
+}
+
+.pidian-diff-action-btn.approve {
+  color: var(--color-green);
+}
+
+.pidian-diff-action-btn.approve:hover {
+  background: rgba(80, 200, 80, 0.15);
+}
+
+.pidian-diff-action-btn.reject {
+  color: var(--color-red);
+}
+
+.pidian-diff-action-btn.reject:hover {
+  background: rgba(255, 80, 80, 0.15);
+}
+
+.pidian-diff-panes {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.pidian-diff-pane {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  border-right: 1px solid var(--background-modifier-border);
+}
+
+.pidian-diff-pane:last-child {
+  border-right: none;
+}
+
+.pidian-diff-pane-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 12px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  background: var(--background-secondary-alt);
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.pidian-diff-pane-hint {
+  font-size: 10px;
+  font-weight: 400;
+  opacity: 0.7;
+}
+
+.pidian-diff-pane-content {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.pidian-diff-pane-content .cm-editor {
+  height: 100% !important;
+}
+
+.pidian-diff-pane-content .cm-scroller {
+  overflow: auto !important;
+  flex: 1;
+}
+
+.pidian-diff-line-delete {
+  background: rgba(255, 80, 80, 0.2);
+}
+
+.pidian-diff-line-insert {
+  background: rgba(80, 200, 80, 0.2);
+}
+
+.pidian-diff-del {
+  background: rgba(255, 80, 80, 0.2);
+  text-decoration: line-through;
+  color: var(--text-muted);
+}
+
+.pidian-diff-ins {
+  background: rgba(80, 200, 80, 0.2);
+  color: var(--text-normal);
+}
+
+.pidian-diff-modal {
+  width: 90vw;
+  max-width: 1400px;
+  height: 85vh;
+  display: flex;
+  flex-direction: column;
+  padding: 0 !important;
+}
+
+.pidian-diff-modal .modal-content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 0;
+}
+
+.pidian-diff-modal-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--background-modifier-border);
+  background: var(--background-secondary);
+}
+
+.pidian-diff-modal-title {
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.pidian-diff-modal-path {
+  color: var(--text-muted);
+  font-size: 13px;
+  font-family: var(--font-monospace);
+}
+
+.pidian-diff-modal-stats {
+  margin-left: auto;
+  font-family: var(--font-monospace);
+  font-size: 13px;
+}
+
+.pidian-diff-modal-panes {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.pidian-diff-modal-pane {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  border-right: 1px solid var(--background-modifier-border);
+}
+
+.pidian-diff-modal-pane:last-child {
+  border-right: none;
+}
+
+.pidian-diff-modal-pane-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 16px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  background: var(--background-secondary-alt);
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.pidian-diff-modal-pane-hint {
+  font-size: 10px;
+  font-weight: 400;
+  opacity: 0.7;
+}
+
+.pidian-diff-modal-pane-content {
+  flex: 1;
+  overflow: hidden;
+}
+
+.pidian-diff-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 16px 20px;
+  background: var(--background-secondary);
+}
+
+.pidian-diff-modal-btn {
+  padding: 8px 24px;
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.pidian-diff-modal-btn-reject {
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--background-modifier-border);
+}
+
+.pidian-diff-modal-btn-reject:hover {
+  background: var(--background-modifier-hover);
+  color: var(--text-normal);
+}
+
+.pidian-diff-modal-btn-approve {
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+  border: none;
+}
+
+.pidian-diff-modal-btn-approve:hover {
+  background: var(--interactive-accent-hover);
+}
+
+.pidian-inline-file-diff {
+  padding: 16px;
+  background: var(--background-primary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 6px;
+  margin: 8px 0;
+}
+
+.pidian-inline-file-diff-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.pidian-inline-file-diff-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.pidian-inline-file-diff-op {
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--text-normal);
+}
+
+.pidian-inline-file-diff-stats {
+  font-family: var(--font-monospace);
+  font-size: 12px;
+}
+
+.pidian-inline-file-diff-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.pidian-inline-diff-btn.approve {
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+  padding: 4px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+}
+
+.pidian-inline-diff-btn.approve:hover {
+  background: var(--interactive-accent-hover);
+}
+
+.pidian-inline-diff-btn.reject {
+  background: transparent;
+  color: var(--text-muted);
+  padding: 4px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid var(--background-modifier-border);
+}
+
+.pidian-inline-diff-btn.reject:hover {
+  background: var(--background-modifier-hover);
+  color: var(--text-normal);
+}
+
+.pidian-inline-file-diff-content {
+  font-family: var(--font-text);
+  font-size: var(--font-text-size);
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 400px;
+  overflow-y: auto;
+}

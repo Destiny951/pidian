@@ -1,0 +1,164 @@
+/* Plugin Settings */
+.pidian-plugin-settings-desc {
+  margin-bottom: 12px;
+}
+
+.pidian-plugins-container {
+  margin-top: 8px;
+}
+
+.pidian-plugin-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  padding: 0 12px;
+}
+
+.pidian-plugin-label {
+  font-size: var(--font-ui-small);
+  color: var(--text-muted);
+  font-weight: var(--font-medium);
+}
+
+.pidian-plugin-empty {
+  padding: 16px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 13px;
+  background: var(--background-secondary);
+  border-radius: 6px;
+}
+
+.pidian-plugin-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.pidian-plugin-section-header {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  padding: 8px 12px 4px;
+  font-weight: 600;
+}
+
+.pidian-plugin-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 12px;
+  background: var(--background-secondary);
+  border-radius: 6px;
+  transition: background 0.15s ease;
+}
+
+.pidian-plugin-item:hover {
+  background: var(--background-modifier-hover);
+}
+
+.pidian-plugin-item-disabled {
+  opacity: 0.6;
+}
+
+.pidian-plugin-item-error {
+  opacity: 0.8;
+}
+
+.pidian-plugin-status {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-top: 6px;
+  flex-shrink: 0;
+}
+
+.pidian-plugin-status-enabled {
+  background: var(--color-green);
+}
+
+.pidian-plugin-status-disabled {
+  background: var(--text-muted);
+}
+
+.pidian-plugin-status-error {
+  background: var(--text-error);
+}
+
+.pidian-plugin-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.pidian-plugin-name-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.pidian-plugin-name {
+  font-weight: 600;
+}
+
+.pidian-plugin-version-badge {
+  font-size: 10px;
+  padding: 2px 6px;
+  background: var(--background-modifier-border);
+  border-radius: 4px;
+  color: var(--text-muted);
+}
+
+.pidian-plugin-error-badge {
+  font-size: 10px;
+  padding: 2px 6px;
+  background: var(--text-error);
+  color: var(--text-on-accent);
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+.pidian-plugin-preview {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pidian-plugin-preview-error {
+  color: var(--text-error);
+}
+
+.pidian-plugin-actions {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.pidian-plugin-action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  border-radius: 4px;
+  cursor: pointer;
+  color: var(--text-muted);
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.pidian-plugin-action-btn:hover {
+  background: var(--background-modifier-hover);
+  color: var(--text-normal);
+}
+
+.pidian-plugin-action-btn svg {
+  width: 14px;
+  height: 14px;
+}

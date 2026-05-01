@@ -1,0 +1,87 @@
+/* Slash Command Dropdown */
+.pidian-slash-dropdown {
+  display: none;
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  right: 0;
+  margin-bottom: 4px;
+  background: var(--background-secondary);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 6px;
+  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.pidian-slash-dropdown.visible {
+  display: block;
+}
+
+/* Fixed positioning for inline editor */
+.pidian-slash-dropdown-fixed {
+  position: fixed;
+  z-index: 10001;
+}
+
+.pidian-slash-item {
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: background 0.1s ease;
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.pidian-slash-item:last-child {
+  border-bottom: none;
+}
+
+.pidian-slash-item:hover,
+.pidian-slash-item.selected {
+  background: var(--background-modifier-hover);
+}
+
+.pidian-slash-name {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-normal);
+  font-family: var(--font-monospace);
+}
+
+.pidian-slash-hint {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-left: 8px;
+}
+
+.pidian-slash-desc {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pidian-slash-empty {
+  padding: 16px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+/* Scrollbar */
+.pidian-slash-dropdown::-webkit-scrollbar {
+  width: 6px;
+}
+
+.pidian-slash-dropdown::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.pidian-slash-dropdown::-webkit-scrollbar-thumb {
+  background: var(--background-modifier-border);
+  border-radius: 3px;
+}

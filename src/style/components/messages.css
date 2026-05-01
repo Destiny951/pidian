@@ -1,0 +1,376 @@
+/* Messages wrapper (for scroll-to-bottom button positioning) */
+.pidian-messages-wrapper {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.pidian-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Focusable messages panel for vim-style navigation */
+.pidian-messages-focusable:focus {
+  outline: none;
+}
+
+/* Welcome message - claude.ai style */
+.pidian-welcome {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 20px;
+  min-height: 200px;
+}
+
+.pidian-welcome-greeting {
+  font-family: 'Copernicus', 'Tiempos Headline', 'Tiempos', Georgia, 'Times New Roman', serif;
+  font-size: 28px;
+  font-weight: 300;
+  color: var(--text-muted);
+  letter-spacing: -0.01em;
+}
+
+.pidian-message {
+  padding: 10px 14px;
+  border-radius: 8px;
+  max-width: 95%;
+  word-wrap: break-word;
+}
+
+.pidian-message-user {
+  position: relative;
+  background: rgba(0, 0, 0, 0.3);
+  align-self: flex-end;
+  border-end-end-radius: 4px;
+}
+
+/* Text selection in user messages - visible highlight */
+.pidian-message-user ::selection {
+  background: rgba(255, 255, 255, 0.35);
+  color: inherit;
+}
+
+.pidian-message-assistant {
+  background: transparent;
+  align-self: stretch;
+  width: 100%;
+  max-width: 100%;
+  border-end-start-radius: 4px;
+  text-align: start;
+}
+
+.pidian-message-content {
+  line-height: 1.5;
+  user-select: text;
+  -webkit-user-select: text;
+  unicode-bidi: plaintext; /* Proper BiDi text handling for mixed RTL/LTR */
+}
+
+.pidian-interrupted {
+  color: #d45d5d;
+}
+
+.pidian-interrupted-hint {
+  color: var(--text-muted);
+}
+
+.pidian-text-block {
+  position: relative;
+  margin: 0;
+}
+
+.pidian-text-copy-btn {
+  position: absolute;
+  bottom: 0;
+  inset-inline-end: 0;
+  border: none;
+  color: var(--text-faint);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s ease, color 0.15s ease;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.pidian-text-copy-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.pidian-text-block:hover .pidian-text-copy-btn {
+  opacity: 1;
+}
+
+.pidian-text-copy-btn:hover {
+  color: var(--text-normal);
+}
+
+.pidian-text-copy-btn.copied {
+  color: var(--text-accent);
+  font-size: 11px;
+  font-family: var(--font-monospace);
+}
+
+.pidian-text-block+.pidian-tool-call {
+  margin-top: 8px;
+}
+
+.pidian-tool-call+.pidian-text-block {
+  margin-top: 8px;
+}
+
+.pidian-message-content p {
+  margin: 0 0 8px 0;
+}
+
+.pidian-message-content p:last-child {
+  margin-bottom: 0;
+}
+
+.pidian-message-content ul,
+.pidian-message-content ol {
+  margin: 8px 0;
+  padding-inline-start: 20px;
+}
+
+/* Full-width tables */
+.pidian-message-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 8px 0;
+}
+
+.pidian-message-content th,
+.pidian-message-content td {
+  border: 1px solid var(--background-modifier-border);
+  padding: 6px 10px;
+  text-align: start;
+}
+
+.pidian-message-content th {
+  background: var(--background-secondary);
+  font-weight: 600;
+}
+
+.pidian-message-content tr:hover {
+  background: var(--background-secondary-alt);
+}
+
+.pidian-messages::-webkit-scrollbar {
+  width: 6px;
+}
+
+.pidian-messages::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.pidian-messages::-webkit-scrollbar-thumb {
+  background: var(--background-modifier-border);
+  border-radius: 3px;
+}
+
+.pidian-messages::-webkit-scrollbar-thumb:hover {
+  background: var(--background-modifier-border-hover);
+}
+
+/* Response duration footer - styled as another line of content */
+.pidian-response-footer {
+  margin-top: 8px;
+}
+
+.pidian-baked-duration {
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 500;
+  font-style: italic;
+}
+
+.pidian-stream-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  color: var(--claudian-brand);
+  font-size: 12px;
+}
+
+.pidian-stream-status-spinner {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  flex: 0 0 auto;
+  animation: claudian-thinking-spin 0.9s linear infinite;
+}
+
+.pidian-stream-status-text {
+  font-style: italic;
+}
+
+.pidian-stream-status-hint {
+  color: var(--text-muted);
+  font-style: normal;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Action buttons toolbar below user messages */
+.pidian-user-msg-actions {
+  position: absolute;
+  bottom: -20px;
+  right: 0;
+  display: flex;
+  gap: 12px;
+  opacity: 0;
+  transition: opacity 0.15s;
+  z-index: 1;
+}
+
+.pidian-message-user:hover .pidian-user-msg-actions {
+  opacity: 1;
+}
+
+.pidian-user-msg-actions span {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-faint);
+  transition: color 0.15s;
+}
+
+.pidian-user-msg-actions span svg {
+  width: 16px;
+  height: 16px;
+}
+
+.pidian-user-msg-actions span:hover {
+  color: var(--text-normal);
+}
+
+.pidian-user-msg-actions span.copied {
+  color: var(--text-accent);
+  font-size: 11px;
+  font-family: var(--font-monospace);
+}
+
+/* Compact boundary indicator */
+.pidian-compact-boundary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 12px 0;
+}
+
+.pidian-compact-boundary::before,
+.pidian-compact-boundary::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--background-modifier-border);
+}
+
+.pidian-compact-boundary-label {
+  color: var(--text-muted);
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.pidian-user-context {
+  margin-top: 8px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 6px;
+  background: var(--background-secondary);
+}
+
+.pidian-user-context-summary {
+  cursor: pointer;
+  padding: 6px 8px;
+  color: var(--text-muted);
+  font-size: 12px;
+  font-family: var(--font-monospace);
+  user-select: none;
+}
+
+.pidian-user-context-list {
+  padding: 0 8px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.pidian-user-context-card {
+  padding: 6px;
+  border-radius: 4px;
+  background: var(--background-primary-alt);
+}
+
+.pidian-user-context-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.pidian-user-context-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  color: var(--text-muted);
+  margin-top: 1px;
+}
+
+.pidian-user-context-icon svg {
+  width: 14px;
+  height: 14px;
+}
+
+.pidian-user-context-meta {
+  min-width: 0;
+}
+
+.pidian-user-context-title {
+  color: var(--text-normal);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.pidian-user-context-subtitle {
+  color: var(--text-muted);
+  font-size: 12px;
+  word-break: break-word;
+}
+
+.pidian-user-context-details {
+  margin-top: 4px;
+}
+
+.pidian-user-context-details > summary {
+  cursor: pointer;
+  color: var(--text-faint);
+  font-size: 11px;
+}
+
+.pidian-user-context-content {
+  margin: 6px 0 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-family: var(--font-monospace);
+  font-size: 11px;
+  color: var(--text-normal);
+}

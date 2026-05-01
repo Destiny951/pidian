@@ -1,0 +1,203 @@
+/* Status Panel - persistent bottom panel for todos and command output */
+
+.pidian-status-panel-container {
+  flex-shrink: 0;
+  padding: 0 14px;
+}
+
+.pidian-status-panel {
+  padding-top: 12px;
+}
+
+/* Todo Section */
+
+.pidian-status-panel-todos {
+  margin-top: 4px;
+}
+
+.pidian-status-panel-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background 0.15s ease;
+  overflow: hidden;
+}
+
+.pidian-status-panel-header:hover {
+  background: var(--background-modifier-hover);
+}
+
+.pidian-status-panel-header:focus-visible {
+  outline: 2px solid var(--interactive-accent);
+  outline-offset: 2px;
+}
+
+.pidian-status-panel-icon {
+  display: flex;
+  align-items: center;
+  color: var(--text-accent);
+  flex-shrink: 0;
+}
+
+.pidian-status-panel-icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.pidian-status-panel-label {
+  font-family: var(--font-monospace);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-normal);
+}
+
+.pidian-status-panel-current {
+  flex: 1;
+  font-family: var(--font-monospace);
+  font-size: 13px;
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pidian-status-panel-status {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.pidian-status-panel-status svg {
+  width: 14px;
+  height: 14px;
+}
+
+.pidian-status-panel-status.status-completed {
+  color: var(--color-green);
+}
+
+.pidian-status-panel-content {
+  padding: 2px 0;
+}
+
+/* Individual todo item - shared by status panel and inline tool via .pidian-todo-list-container */
+.pidian-todo-list-container .pidian-todo-item {
+  display: flex;
+  align-items: flex-start;
+  padding: 1px 0;
+}
+
+.pidian-todo-list-container .pidian-todo-status-icon {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.pidian-todo-list-container .pidian-todo-status-icon svg {
+  width: 12px;
+  height: 12px;
+}
+
+.pidian-todo-list-container .pidian-todo-text {
+  font-family: var(--font-monospace);
+  font-size: 12px;
+  line-height: 1.4;
+  flex: 1;
+  padding-left: 12px;
+}
+
+.pidian-todo-list-container .pidian-todo-pending .pidian-todo-status-icon {
+  color: var(--text-normal);
+}
+
+.pidian-todo-list-container .pidian-todo-pending .pidian-todo-status-icon svg {
+  transform: scale(2);
+}
+
+.pidian-todo-list-container .pidian-todo-pending .pidian-todo-text {
+  color: var(--text-normal);
+}
+
+.pidian-todo-list-container .pidian-todo-in_progress .pidian-todo-status-icon {
+  color: var(--interactive-accent);
+}
+
+.pidian-todo-list-container .pidian-todo-in_progress .pidian-todo-status-icon svg {
+  transform: scale(2);
+}
+
+.pidian-todo-list-container .pidian-todo-in_progress .pidian-todo-text {
+  color: var(--text-normal);
+}
+
+.pidian-todo-list-container .pidian-todo-completed .pidian-todo-status-icon {
+  color: var(--color-green);
+}
+
+.pidian-todo-list-container .pidian-todo-completed .pidian-todo-text {
+  color: var(--text-muted);
+}
+
+/* Bash Output Section */
+
+.pidian-status-panel-bash {
+  margin-bottom: 4px;
+}
+
+.pidian-status-panel-bash-header {
+  padding: 4px 0;
+}
+
+.pidian-status-panel-bash-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pidian-status-panel-bash-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 4px;
+  color: var(--text-muted);
+}
+
+.pidian-status-panel-bash-action:hover {
+  background: var(--background-modifier-hover);
+  color: var(--text-normal);
+}
+
+.pidian-status-panel-bash-content {
+  padding-top: 2px;
+  max-height: 320px;
+  max-height: min(40vh, 320px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.pidian-status-panel-bash-entry {
+  margin: 4px 0;
+}
+
+.pidian-status-panel-bash-entry .pidian-tool-icon svg {
+  width: 14px;
+  height: 14px;
+  position: relative;
+  top: -1px;
+}
+
+.pidian-status-panel-bash-entry .pidian-tool-call {
+  margin: 0;
+}
+
+/* Keep bash output blocks from growing without bound */
+.pidian-status-panel-bash-entry .pidian-tool-result-text {
+  max-height: 200px;
+  overflow-y: auto;
+  word-break: break-word;
+}

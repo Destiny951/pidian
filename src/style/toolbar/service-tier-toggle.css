@@ -1,0 +1,39 @@
+/* Codex fast-mode / service-tier toggle */
+.pidian-service-tier-toggle {
+  display: flex;
+  align-items: center;
+  padding-left: 2px;
+}
+
+.pidian-service-tier-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 4px;
+  color: var(--text-muted);
+  background: transparent;
+  cursor: pointer;
+  transition: color 0.15s ease, background 0.15s ease;
+  flex-shrink: 0;
+}
+
+.pidian-service-tier-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pidian-service-tier-icon svg {
+  width: 14px;
+  height: 14px;
+}
+
+.pidian-service-tier-button:hover {
+  background: var(--background-modifier-hover);
+}
+
+.pidian-service-tier-button.active {
+  color: var(--claudian-brand);
+}

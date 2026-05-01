@@ -1,0 +1,40 @@
+/* Accessibility - Focus Visible Styles */
+
+/* outline + offset + border-radius */
+.pidian-tool-header:focus-visible,
+.pidian-thinking-header:focus-visible,
+.pidian-subagent-header:focus-visible,
+.pidian-header-btn:focus-visible,
+.pidian-model-btn:focus-visible,
+.pidian-thinking-current:focus-visible {
+  outline: 2px solid var(--interactive-accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* outline + offset only */
+.pidian-action-btn:focus-visible,
+.pidian-toggle-switch:focus-visible,
+.pidian-file-chip:focus-visible,
+.pidian-image-chip:focus-visible,
+.pidian-file-chip-remove:focus-visible,
+.pidian-image-remove:focus-visible,
+.pidian-image-modal-close:focus-visible,
+.pidian-approved-remove-btn:focus-visible,
+.pidian-save-env-btn:focus-visible,
+.pidian-restore-snippet-btn:focus-visible,
+.pidian-edit-snippet-btn:focus-visible,
+.pidian-delete-snippet-btn:focus-visible,
+.pidian-cancel-btn:focus-visible,
+.pidian-save-btn:focus-visible,
+.pidian-code-lang-label:focus-visible {
+  outline: 2px solid var(--interactive-accent);
+  outline-offset: 2px;
+}
+
+/* outline + negative offset + border-radius */
+.pidian-history-item-content:focus-visible {
+  outline: 2px solid var(--interactive-accent);
+  outline-offset: -2px;
+  border-radius: 4px;
+}

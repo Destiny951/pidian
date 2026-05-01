@@ -1,0 +1,140 @@
+/* Context usage meter (inline in toolbar) */
+
+.pidian-context-meter {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-inline-start: auto;
+  cursor: default;
+}
+
+.pidian-context-meter.pidian-clickable {
+  cursor: pointer;
+}
+
+.pidian-context-meter-gauge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+}
+
+.pidian-context-meter-gauge svg {
+  width: 16px;
+  height: 16px;
+}
+
+.pidian-context-meter--compacting .pidian-context-meter-gauge svg {
+  animation: claudian-context-meter-spin 0.9s linear infinite;
+}
+
+.pidian-context-meter--compacting .pidian-meter-fill {
+  stroke-dashoffset: 0 !important;
+}
+
+.pidian-meter-bg {
+  stroke: var(--background-modifier-border);
+}
+
+.pidian-meter-fill {
+  stroke: var(--claudian-brand);
+  transition: stroke-dashoffset 0.3s ease, stroke 0.3s ease;
+}
+
+/* Warning state (> 80%) - pale red */
+.pidian-context-meter.warning .pidian-meter-fill {
+  stroke: #E57373;
+}
+
+/* Context usage popup */
+.pidian-context-popup {
+  position: absolute;
+  z-index: 1000;
+  min-width: 180px;
+  padding: 12px;
+  background: var(--background-primary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  font-size: 12px;
+}
+
+.pidian-context-popup-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: var(--text-normal);
+}
+
+.pidian-context-popup-close {
+  cursor: pointer;
+  font-size: 16px;
+  color: var(--text-muted);
+  padding: 2px 4px;
+}
+
+.pidian-context-popup-close:hover {
+  color: var(--text-normal);
+}
+
+.pidian-context-popup-content {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.pidian-context-popup-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.pidian-context-popup-label {
+  color: var(--text-muted);
+}
+
+.pidian-context-popup-value {
+  color: var(--text-normal);
+  font-weight: 500;
+}
+
+.pidian-context-popup-actions {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--background-modifier-border);
+}
+
+.pidian-context-popup-compact-btn {
+  width: 100%;
+  padding: 6px 12px;
+  font-size: 12px;
+  color: var(--text-normal);
+  background: var(--background-secondary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.pidian-context-popup-compact-btn:hover {
+  background: var(--background-modifier-hover);
+}
+
+.pidian-context-popup-compact-btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+@keyframes claudian-context-meter-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}

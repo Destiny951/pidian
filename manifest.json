@@ -1,0 +1,10 @@
+{
+  "id": "pidian",
+  "name": "Pidian",
+  "version": "2.0.4",
+  "minAppVersion": "1.4.5",
+  "description": "Embeds PI agent in your Obsidian vault. Your vault becomes the agent's working directory with file read/write, search, bash, and multi-turn conversation support.",
+  "author": "Destiny951",
+  "authorUrl": "https://github.com/Destiny951",
+  "isDesktopOnly": true
+}

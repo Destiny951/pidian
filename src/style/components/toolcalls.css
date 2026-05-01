@@ -1,0 +1,281 @@
+.pidian-tool-call {
+  margin: 8px 0;
+}
+
+.pidian-tool-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.pidian-tool-header:hover {
+  opacity: 0.85;
+}
+
+.pidian-tool-icon {
+  display: flex;
+  align-items: center;
+  color: var(--text-accent);
+  flex-shrink: 0;
+}
+
+.pidian-tool-icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.pidian-tool-name {
+  font-family: var(--font-monospace);
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--text-normal);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.pidian-tool-summary {
+  font-family: var(--font-monospace);
+  font-size: 13px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+  min-width: 0;
+}
+
+.pidian-tool-summary:empty {
+  display: none;
+}
+
+/* Legacy: StatusPanel bash entries still use claudian-tool-label */
+.pidian-tool-label {
+  font-family: var(--font-monospace);
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--text-normal);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pidian-tool-current {
+  font-family: var(--font-monospace);
+  font-size: 13px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.pidian-tool-current:empty {
+  display: none;
+}
+
+.pidian-tool-status {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+.pidian-tool-status svg {
+  width: 14px;
+  height: 14px;
+}
+
+.pidian-tool-status.status-running {
+  color: var(--text-accent);
+}
+
+.pidian-tool-status.status-completed {
+  color: var(--color-green);
+}
+
+.pidian-tool-status.status-error {
+  color: var(--color-red);
+}
+
+.pidian-tool-status.status-blocked {
+  color: var(--color-orange);
+}
+
+/* Tool call content - border style (like thinking block) */
+.pidian-tool-content {
+  padding: 4px 0;
+  padding-inline-start: 16px;
+  margin-inline-start: 7px;
+  border-inline-start: 2px solid var(--background-modifier-border);
+}
+
+/* Tool content variants that render inline widgets instead of bordered results */
+.pidian-tool-content-todo,
+.pidian-tool-content-ask {
+  border-inline-start: none;
+  margin-inline-start: 0;
+  padding-inline-start: 0;
+}
+
+/* Expanded content: per-line rendering */
+.pidian-tool-lines {
+  font-family: var(--font-monospace);
+  font-size: 12px;
+  line-height: 1.4;
+  overflow-x: auto;
+}
+
+.pidian-tool-line {
+  padding: 1px 0;
+  color: var(--text-muted);
+  white-space: pre;
+}
+
+/* Hover highlight for file search results */
+.pidian-tool-line.hoverable:hover {
+  background: var(--background-modifier-hover);
+}
+
+/* Truncation indicator: "... N more lines" */
+.pidian-tool-truncated {
+  color: var(--text-faint);
+  font-style: italic;
+  padding: 4px 0;
+  font-family: var(--font-monospace);
+  font-size: 12px;
+}
+
+/* ToolSearch expanded: icon + tool name rows */
+.pidian-tool-search-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 0;
+  font-family: var(--font-monospace);
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.pidian-tool-search-icon {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  width: 14px;
+  height: 14px;
+  color: var(--text-faint);
+}
+
+.pidian-tool-search-icon svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* Web search links */
+.pidian-tool-link {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 3px 0;
+  color: var(--text-muted);
+  text-decoration: none;
+  cursor: pointer;
+  font-family: var(--font-monospace);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.pidian-tool-link:hover {
+  color: var(--text-accent);
+}
+
+.pidian-tool-link-icon {
+  flex-shrink: 0;
+  width: 12px;
+  height: 12px;
+  margin-top: 2px;
+  color: var(--text-faint);
+}
+
+.pidian-tool-link-icon svg {
+  width: 12px;
+  height: 12px;
+}
+
+.pidian-tool-link-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Web search summary section */
+.pidian-tool-web-summary {
+  font-family: var(--font-monospace);
+  font-size: 12px;
+  color: var(--text-muted);
+  padding-top: 4px;
+  border-top: 1px solid var(--background-modifier-border);
+  margin-top: 4px;
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+/* Empty state for file search */
+.pidian-tool-empty {
+  color: var(--text-faint);
+  font-style: italic;
+  font-family: var(--font-monospace);
+  font-size: 12px;
+  padding: 4px 0;
+}
+
+.pidian-tool-result-row {
+  display: flex;
+  align-items: flex-start;
+}
+
+.pidian-tool-result-text {
+  font-family: var(--font-monospace);
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.4;
+  white-space: pre-wrap;
+  overflow: hidden;
+  flex: 1;
+}
+
+.pidian-tool-result-item {
+  display: block;
+  margin-bottom: 2px;
+}
+
+.pidian-tool-patch-section + .pidian-tool-patch-section {
+  margin-top: 10px;
+}
+
+.pidian-tool-patch-header {
+  font-family: var(--font-monospace);
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+.pidian-tool-result-item:last-child {
+  margin-bottom: 0;
+}
+
+.pidian-skill-call {
+  margin: 8px 0;
+  padding: 8px 12px;
+  background: var(--background-secondary);
+  border-radius: 6px;
+  border: 1px solid var(--background-modifier-border);
+}
+
+.pidian-skill-args {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-top: 4px;
+  padding-left: 24px;
+}
