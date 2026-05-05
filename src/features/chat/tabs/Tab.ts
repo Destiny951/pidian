@@ -871,6 +871,7 @@ function initializeInputToolbar(
     },
     onPermissionModeChange: async (mode: string) => {
       (plugin.settings as unknown as Record<string, unknown>).permissionMode = mode;
+      tab.cachedSettings.permissionMode = mode;
       await plugin.saveSettings();
       dom.inputWrapper.toggleClass(
         'pidian-input-plan-mode',
@@ -1820,6 +1821,7 @@ function renderAutoTriggeredTurn(tab: TabData, result: AutoTurnResult): void {
 
 export function updatePlanModeUI(tab: TabData, plugin: PidianPlugin, mode: string): void {
   (plugin.settings as unknown as Record<string, unknown>).permissionMode = mode;
+  tab.cachedSettings.permissionMode = mode;
   void plugin.saveSettings();
   tab.ui.permissionToggle?.updateDisplay();
   tab.dom.inputWrapper.toggleClass(

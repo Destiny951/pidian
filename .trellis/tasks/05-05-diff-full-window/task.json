@@ -1,0 +1,42 @@
+{
+  "id": "diff-full-window",
+  "name": "diff-full-window",
+  "title": "Diff 视图全窗口显示替代垂直分栏",
+  "description": "将 DiffApprovalView 的打开方式从垂直分栏改为同标签组内新标签页，使 diff 视图占据主窗口全部 UI 空间。不关闭原文件标签页，diff 完成后直接切回。",
+  "status": "planning",
+  "dev_type": "frontend",
+  "scope": "diff-view",
+  "priority": "P2",
+  "creator": "qzl",
+  "assignee": "qzl",
+  "createdAt": "2026-05-05",
+  "completedAt": null,
+  "branch": null,
+  "base_branch": "dev",
+  "worktree_path": null,
+  "current_phase": 0,
+  "next_action": [
+    {
+      "phase": 1,
+      "action": "implement"
+    },
+    {
+      "phase": 2,
+      "action": "check"
+    },
+    {
+      "phase": 3,
+      "action": "finish"
+    }
+  ],
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [],
+  "parent": null,
+  "relatedFiles": [
+    "src/features/diff-view/DiffApprovalView.ts"
+  ],
+  "notes": "核心改动在 DiffApprovalView.showDiff()：getLeaf('split','vertical') → getLeaf('tab')，移除 detach 原文件逻辑，approve/reject 后切回原标签页。",
+  "meta": {}
+}

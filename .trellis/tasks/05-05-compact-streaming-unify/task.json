@@ -1,0 +1,46 @@
+{
+  "id": "compact-streaming-unify",
+  "name": "compact-streaming-unify",
+  "title": "侧边栏 Compact 按钮统一流式渲染路径",
+  "description": "将侧边栏 ContextUsageMeter 的 compact 按钮改为走 /compact 输入命令的同一条流式渲染链路，让 PI 的 compact 输出实时逐块渲染到聊天框。",
+  "status": "planning",
+  "dev_type": "frontend",
+  "scope": "chat-compact",
+  "priority": "P2",
+  "creator": "qzl",
+  "assignee": "qzl",
+  "createdAt": "2026-05-05",
+  "completedAt": null,
+  "branch": null,
+  "base_branch": "dev",
+  "worktree_path": null,
+  "current_phase": 0,
+  "next_action": [
+    {
+      "phase": 1,
+      "action": "implement"
+    },
+    {
+      "phase": 2,
+      "action": "check"
+    },
+    {
+      "phase": 3,
+      "action": "finish"
+    }
+  ],
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [],
+  "parent": null,
+  "relatedFiles": [
+    "src/features/chat/tabs/Tab.ts",
+    "src/features/chat/controllers/InputController.ts",
+    "src/features/chat/ui/toolbar/ContextUsageMeter.ts",
+    "src/providers/pi/runtime/PiChatRuntime.ts",
+    "src/core/commands/builtInCommands.ts"
+  ],
+  "notes": "核心改动在 Tab.ts 的 onCompact 回调，从 runtime.compact() RPC 改为 sendMessage({ content: '/compact' }) 流式路径。",
+  "meta": {}
+}
