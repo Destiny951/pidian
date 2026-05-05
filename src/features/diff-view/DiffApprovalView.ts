@@ -25,7 +25,11 @@ interface LineDecoration {
   type: 'delete' | 'insert';
 }
 
-let pendingRequest: { params: DiffApprovalParams; resolve: (result: DiffApprovalResult) => void } | null = null;
+let pendingRequest: {
+  params: DiffApprovalParams;
+  resolve: (result: DiffApprovalResult) => void;
+  originalLeaf?: WorkspaceLeaf | null;
+} | null = null;
 
 export class DiffApprovalView extends ItemView {
   private plugin: PidianPlugin;
@@ -80,7 +84,13 @@ export class DiffApprovalView extends ItemView {
     this.rightEditor?.destroy();
     this.leftEditor = null;
     this.rightEditor = null;
+
+    const originalLeaf = this.captureOriginalLeaf();
     this.resolveDecision({ decision: 'cancel' });
+
+    if (originalLeaf) {
+      await this.activateOriginalLeaf(originalLeaf);
+    }
   }
 
   private renderView(): void {
@@ -250,17 +260,19 @@ export class DiffApprovalView extends ItemView {
 
   private async handleApprove(): Promise<void> {
     const editedContent = this.rightEditor?.state.doc.toString() ?? this.proposedContent;
+    const originalLeaf = this.captureOriginalLeaf();
     this.resolveDecision({ decision: 'approve', editedContent });
 
-    await this.reopenOriginalFile();
     this.leaf.detach();
+    await this.activateOriginalLeaf(originalLeaf);
   }
 
   private async handleReject(): Promise<void> {
+    const originalLeaf = this.captureOriginalLeaf();
     this.resolveDecision({ decision: 'reject' });
 
-    await this.reopenOriginalFile();
     this.leaf.detach();
+    await this.activateOriginalLeaf(originalLeaf);
   }
 
   private resolveDecision(result: DiffApprovalResult): void {
@@ -270,7 +282,30 @@ export class DiffApprovalView extends ItemView {
     request.resolve(result);
   }
 
-  private async reopenOriginalFile(): Promise<void> {
+  private captureOriginalLeaf(): WorkspaceLeaf | null {
+    const request = pendingRequest;
+    if (!request || request.params !== this.params) return null;
+    const leaf = request.originalLeaf ?? null;
+    request.originalLeaf = null;
+    return leaf;
+  }
+
+  private async activateOriginalLeaf(originalLeaf: WorkspaceLeaf | null): Promise<void> {
+    if (originalLeaf?.view instanceof MarkdownView && originalLeaf.view.file) {
+      const { workspace } = this.plugin.app;
+      workspace.setActiveLeaf(originalLeaf, { focus: true });
+
+      const filePath = this.params?.filePath;
+      if (filePath) {
+        const file = this.plugin.app.vault.getAbstractFileByPath(filePath);
+        if (file instanceof TFile) {
+          await originalLeaf.openFile(file);
+        }
+      }
+      return;
+    }
+
+    // Fallback: original leaf was closed or invalid
     const filePath = this.params?.filePath;
     if (!filePath) return;
 
@@ -287,20 +322,24 @@ export class DiffApprovalView extends ItemView {
     pendingRequest?.resolve({ decision: 'cancel' });
     pendingRequest = null;
 
+    // Record the leaf showing the target file (do NOT detach it)
+    let originalLeaf: WorkspaceLeaf | null = null;
     for (const leaf of plugin.app.workspace.getLeavesOfType('markdown')) {
       if (leaf.view instanceof MarkdownView && leaf.view.file?.path === filePath) {
-        leaf.detach();
+        originalLeaf = leaf;
         break;
       }
     }
 
+    // Close existing diff views
     for (const leaf of plugin.app.workspace.getLeavesOfType(VIEW_TYPE_DIFF_APPROVAL)) {
       leaf.detach();
     }
 
-    const leaf = plugin.app.workspace.getLeaf('split', 'vertical');
+    // Open diff in the same tab group (full-window, not a vertical split)
+    const leaf = plugin.app.workspace.getLeaf('tab');
     return new Promise((resolve) => {
-      pendingRequest = { params, resolve };
+      pendingRequest = { params, resolve, originalLeaf };
       void leaf.setViewState({ type: VIEW_TYPE_DIFF_APPROVAL, active: true }).then(() => {
         plugin.app.workspace.revealLeaf(leaf);
       }).catch((error) => {

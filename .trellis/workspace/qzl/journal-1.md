@@ -29,3 +29,35 @@
 - Follow-up fix: PI SDK restores existing session metadata before settings defaults, so model switching now records a one-shot bridge model override and passes it into `createAgentSession()` while reusing the same `SessionManager`.
 - Follow-up fix: `PiChatRuntime.setModel()` preserves the desired PI `sessionId` across reset, so the next session keeps the existing conversation history instead of starting a fresh PI session.
 - PI-only refactor: blank tabs, provider resolution, model routing, enabled-provider lookup, and blank-tab command catalog resolution now treat all model values as PI models under the single `pi` provider instead of deriving chat providers from `provider/modelId`.
+
+
+## Session 1: Compact UI feedback + diff full-window
+
+**Date**: 2026-05-05
+**Task**: Compact UI feedback + diff full-window
+
+### Summary
+
+完成两个任务：1) Compact按钮在RPC等待期间显示spinner和压缩结果到聊天框；2) Diff视图从垂直分栏改为同tab group内新标签页全窗口显示，approve/reject后切回原标签页
+
+### Main Changes
+
+
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `eb60fda` | (see git log) |
+
+### Testing
+
+- [OK] (Add test results)
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- None - task complete
