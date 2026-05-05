@@ -46,7 +46,7 @@ import { createInputToolbar } from '../ui/InputToolbar';
 import { InstructionModeManager as InstructionModeManagerClass } from '../ui/InstructionModeManager';
 import { NavigationSidebar } from '../ui/NavigationSidebar';
 import { StatusPanel } from '../ui/StatusPanel';
-import { calculateUsagePercentage, recalculateUsageForModel } from '../utils/usageInfo';
+import { recalculateUsageForModel } from '../utils/usageInfo';
 import { getTabProviderId } from './providerResolution';
 import type { TabData, TabDOMElements, TabId, TabProviderContext } from './types';
 import { generateTabId, TEXTAREA_MAX_HEIGHT_PERCENT, TEXTAREA_MIN_MAX_HEIGHT } from './types';
@@ -305,15 +305,6 @@ async function refreshContextUsageForBoundConversation(
   } catch {
     // Silently ignore usage refresh errors during tab load
   }
-}
-
-function coerceTokenCount(value: unknown): number | null {
-  if (typeof value === 'number' && Number.isFinite(value)) return value;
-  if (typeof value === 'string') {
-    const parsed = Number(value);
-    if (Number.isFinite(parsed)) return parsed;
-  }
-  return null;
 }
 
 function formatTokenCount(value: number | null): string {
@@ -889,18 +880,44 @@ function initializeInputToolbar(
         new Notice('Compact is not supported by this provider');
         return;
       }
+
       const beforeUsage = tab.state.usage;
       tab.ui.contextUsageMeter?.setCompacting?.(true);
+
+      // Show "Compacting..." indicator in chat before RPC
+      const compactedAt = Date.now();
+      const compactMessage: ChatMessage = {
+        id: `pi-compact-${compactedAt}`,
+        role: 'assistant',
+        content: '⏳ Compacting context...',
+        timestamp: compactedAt,
+        contentBlocks: [{ type: 'text', content: '⏳ Compacting context...' }],
+      };
+      tab.state.addMessage(compactMessage);
+      const msgEl = tab.renderer?.addMessage(compactMessage);
+      const contentEl = msgEl?.querySelector('.pidian-message-content') as HTMLElement | null;
+      if (contentEl) {
+        const textEl = contentEl.createDiv({ cls: 'pidian-text-block' });
+        void tab.renderer?.renderContent(textEl, '⏳ Compacting context...');
+      }
+
+      // Scroll to show the indicator
+      const messagesEl = tab.dom?.messagesEl;
+      if (messagesEl) {
+        messagesEl.scrollTop = messagesEl.scrollHeight;
+      }
+
       try {
         const result = await runtime.compact();
         if (!result) {
           throw new Error('Context compaction failed before PI session was updated');
         }
-        const refreshedUsage = result?.usage ?? await runtime.getContextUsage?.() ?? null;
+
+        const refreshedUsage = result.usage ?? await runtime.getContextUsage?.() ?? null;
         if (refreshedUsage?.contextTokens !== null || !result || result.estimatedTokensAfter === null) {
           if (refreshedUsage) {
             tab.state.usage = refreshedUsage;
-          } else if (result?.estimatedTokensAfter === null) {
+          } else if (result.estimatedTokensAfter === null) {
             tab.state.usage = {
               ...(beforeUsage ?? {}),
               inputTokens: null,
@@ -920,22 +937,41 @@ function initializeInputToolbar(
             ...(refreshedUsage ?? {}),
             inputTokens: result.estimatedTokensAfter,
             contextTokens: result.estimatedTokensAfter,
-            percentage: calculateUsagePercentage(result.estimatedTokensAfter, contextWindow),
+            percentage: (contextWindow > 0 && result.estimatedTokensAfter != null)
+              ? (result.estimatedTokensAfter / contextWindow) * 100
+              : null,
             contextWindow,
           };
         }
         tab.ui.contextUsageMeter?.update(tab.state.usage);
 
-        const compactedAt = Date.now();
-        const compactMessage: ChatMessage = {
-          id: `pi-compact-${compactedAt}`,
-          role: 'assistant',
-          content: '',
-          timestamp: compactedAt,
-          contentBlocks: [{ type: 'context_compacted' }],
-        };
-        tab.state.addMessage(compactMessage);
-        tab.renderer?.renderStoredMessage(compactMessage, tab.state.messages, tab.state.messages.length - 1);
+        // Replace placeholder with compact boundary + summary
+        compactMessage.content = '';
+        compactMessage.contentBlocks = [{ type: 'context_compacted' }];
+
+        if (contentEl) {
+          contentEl.empty();
+
+          const boundaryEl = contentEl.createDiv({ cls: 'pidian-compact-boundary' });
+          boundaryEl.createSpan({ cls: 'pidian-compact-boundary-label', text: 'Conversation compacted' });
+
+          const summary = result.summary?.trim();
+          if (summary) {
+            const summaryEl = contentEl.createDiv({ cls: 'pidian-text-block pidian-compact-summary' });
+            void tab.renderer?.renderContent(summaryEl, summary);
+          }
+
+          const beforeTokens = beforeUsage?.contextTokens ?? null;
+          const afterTokens = refreshedUsage?.contextTokens ?? null;
+          if (beforeTokens !== null && afterTokens !== null) {
+            const footerEl = contentEl.createDiv({ cls: 'pidian-compact-footer' });
+            footerEl.setText(`${formatTokenCount(beforeTokens)} → ${formatTokenCount(afterTokens)} tokens`);
+          }
+        }
+
+        if (messagesEl) {
+          messagesEl.scrollTop = messagesEl.scrollHeight;
+        }
 
         if (tab.state.currentConversationId) {
           void plugin.updateConversation(tab.state.currentConversationId, {
@@ -945,17 +981,16 @@ function initializeInputToolbar(
           });
         }
 
-        const beforeTokens = coerceTokenCount(result?.tokensBefore) ?? beforeUsage?.contextTokens ?? null;
-        const afterTokens = refreshedUsage?.contextTokens
-          ?? coerceTokenCount(result?.estimatedTokensAfter)
-          ?? null;
-
+        const beforeTokens = beforeUsage?.contextTokens ?? null;
+        const afterTokens = refreshedUsage?.contextTokens ?? null;
         if (beforeTokens !== null || afterTokens !== null) {
           new Notice(`Context compacted: ${formatTokenCount(beforeTokens)} -> ${formatTokenCount(afterTokens)} tokens`);
         } else {
           new Notice('Context compaction completed');
         }
       } catch (error) {
+        tab.state.messages = tab.state.messages.filter(m => m.id !== compactMessage.id);
+        msgEl?.remove();
         const msg = error instanceof Error ? error.message : 'Compact failed';
         new Notice(msg);
       } finally {
