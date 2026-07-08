@@ -1,9 +1,13 @@
 import { execFile } from 'child_process';
+import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
 import { pathToFileURL } from 'url';
 
-const PI_GLOBAL_PACKAGE_SEGMENTS = ['@mariozechner', 'pi-coding-agent', 'dist', 'index.js'] as const;
+const PI_GLOBAL_PACKAGE_CANDIDATES = [
+  ['@earendil-works', 'pi-coding-agent', 'dist', 'index.js'],
+  ['@mariozechner', 'pi-coding-agent', 'dist', 'index.js'],
+] as const;
 
 let globalNpmRootPromise: Promise<string> | null = null;
 
@@ -40,6 +44,16 @@ export function getDefaultPiAgentDir(homeDir: string = os.homedir()): string {
 
 export async function resolvePiSdkUrl(): Promise<string> {
   const globalNpmRoot = await getGlobalNpmRoot();
-  const sdkPath = path.join(globalNpmRoot, ...PI_GLOBAL_PACKAGE_SEGMENTS);
-  return pathToFileURL(sdkPath).href;
+
+  for (const segments of PI_GLOBAL_PACKAGE_CANDIDATES) {
+    const sdkPath = path.join(globalNpmRoot, ...segments);
+    if (fs.existsSync(sdkPath)) {
+      return pathToFileURL(sdkPath).href;
+    }
+  }
+
+  const attempted = PI_GLOBAL_PACKAGE_CANDIDATES
+    .map((segments) => path.join(globalNpmRoot, ...segments))
+    .join(', ');
+  throw new Error(`Could not locate PI SDK. Tried: ${attempted}`);
 }

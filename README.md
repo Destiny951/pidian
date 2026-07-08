@@ -21,13 +21,13 @@ Your vault becomes PI's working directory, so the agent can read and write files
 - Global PI install:
 
 ```bash
-npm install -g @mariozechner/pi-coding-agent
+npm install -g @earendil-works/pi-coding-agent
 ```
 
-Pidian resolves PI automatically:
+Pidian resolves PI automatically and supports both the current and legacy PI package namespaces:
 
-- PI agent directory: `~/.pi/agent`
-- PI SDK entry: `$(npm root -g)/@mariozechner/pi-coding-agent/dist/index.js`
+- Current PI SDK entry: `$(npm root -g)/@earendil-works/pi-coding-agent/dist/index.js`
+- Legacy PI SDK entry: `$(npm root -g)/@mariozechner/pi-coding-agent/dist/index.js`
 
 There is no user-facing `PI_AGENT_DIR` or `PI_SDK_PATH` setting.
 
@@ -53,8 +53,8 @@ There is no user-facing `PI_AGENT_DIR` or `PI_SDK_PATH` setting.
 ## Development
 
 ```bash
-git clone https://github.com/Destiny951/claudian.git
-cd claudian
+git clone https://github.com/Destiny951/pidian.git
+cd pidian
 npm install
 npm run dev
 ```
